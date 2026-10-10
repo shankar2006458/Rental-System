@@ -1,0 +1,3518 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RentalTrack</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --navy:#0d1b32;--navy2:#142744;--ink:#162033;--muted:#64748b;--line:#dce4ee;
+    --paper:#f5f7fb;--white:#fff;--accent:#ea6a2f;--green:#16835b;--blue:#2563eb;
+    --orange:#d97706;--danger:#be3144;--shadow:0 12px 30px rgba(18,34,56,.09);
+    --ease-out:cubic-bezier(.16,1,.3,1);
+    --grad-navy:linear-gradient(160deg,#0d1b32 0%,#142744 55%,#1b3358 100%);
+    --grad-accent:linear-gradient(135deg,#ff8a4c 0%,#ea6a2f 55%,#cf5420 100%);
+    --grad-green:linear-gradient(135deg,#34d399 0%,#16835b 100%);
+    --grad-blue:linear-gradient(135deg,#60a5fa 0%,#2563eb 100%);
+    --grad-amber:linear-gradient(135deg,#fbbf24 0%,#d97706 100%);
+    --grad-rose:linear-gradient(135deg,#fb7185 0%,#be3144 100%);
+    --card-radius:16px;
+    --soft-shadow:0 1px 2px rgba(20,35,55,.04),0 8px 24px rgba(20,35,55,.06);
+    --hover-shadow:0 6px 16px rgba(20,35,55,.10),0 18px 40px rgba(20,35,55,.08);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);min-width:320px;
+    font-family:"DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+  button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+    outline:3px solid #f7b28d;outline-offset:2px;
+  }
+
+  /* ---------- Layout ---------- */
+  .app{width:100%;min-height:100%;display:flex}
+  .sidebar{
+    width:250px;min-height:100vh;background:var(--grad-navy);color:#dbeafe;padding:24px 14px;
+    position:sticky;top:0;align-self:flex-start;
+  }
+  .brand{display:flex;align-items:center;gap:11px;padding:0 10px 26px}
+  .brand-mark{
+    width:34px;height:34px;border-radius:10px;background:var(--grad-accent);
+    display:grid;place-items:center;color:#fff;font-size:18px;font-weight:800;
+    box-shadow:0 6px 14px rgba(234,106,47,.35);
+  }
+  .brand-name{color:#fff;font-weight:700;font-size:22px;letter-spacing:-.8px}
+  .nav-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#7890ae;padding:0 10px 9px}
+  .nav{display:grid;gap:4px}
+  .nav button{
+    border:0;background:transparent;color:#b9c7d9;text-align:left;border-radius:9px;
+    padding:11px 12px;display:flex;align-items:center;gap:11px;font-weight:600;
+    transition:background .18s ease,color .18s ease,transform .18s var(--ease-out);
+  }
+  .nav button:hover,.nav button.active{background:#203858;color:#fff}
+  .nav button:active{transform:scale(.98)}
+  .nav-icon{width:19px;text-align:center}
+  .sidebar-foot{font-size:12px;color:#87a0c0;position:absolute;bottom:24px;padding:0 10px;line-height:1.45}
+
+  .workspace{width:calc(100% - 250px);min-width:0}
+  .topbar{
+    min-height:78px;background:rgba(255,255,255,.92);border-bottom:1px solid var(--line);padding:16px 30px;
+    display:flex;align-items:center;gap:18px;justify-content:space-between;
+    position:sticky;top:0;z-index:5;
+    -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  }
+  .topbar h1{font-size:22px;margin:0;letter-spacing:-.5px}
+  .top-actions{display:flex;gap:12px;align-items:center}
+  .search{width:245px;padding:10px 13px;border:1px solid var(--line);border-radius:8px;background:#fafcff}
+  .content{padding:28px 30px 45px;max-width:1500px;margin:auto}
+
+  /* ---------- Views + entrance animation ---------- */
+  .view{display:none}
+  .view.active{display:block;animation:viewIn .34s var(--ease-out) both}
+  @keyframes viewIn{
+    from{opacity:0;transform:translateY(10px)}
+    to{opacity:1;transform:translateY(0)}
+  }
+
+  .view-head{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:22px}
+  .view-head h2{margin:0;font-size:23px;letter-spacing:-.6px}
+  .view-head p{color:var(--muted);margin:5px 0 0;font-size:14px}
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    border:1px solid transparent;border-radius:8px;padding:10px 14px;font-weight:700;
+    display:inline-flex;align-items:center;justify-content:center;gap:7px;
+    background:#fff;color:var(--ink);
+    transition:background .18s ease,border-color .18s ease,color .18s ease,
+               transform .16s var(--ease-out),box-shadow .18s ease;
+  }
+  .btn:hover{box-shadow:0 4px 12px rgba(20,35,55,.08)}
+  .btn:active{transform:scale(.97)}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-primary:hover{background:#cf5420}
+  .btn-secondary{border-color:var(--line)}
+  .btn-secondary:hover{background:#f7f9fc}
+  .btn-danger{background:#fff0f1;color:var(--danger);border-color:#ffd4d9}
+  .btn-danger:hover{background:#ffe4e7}
+  .btn-small{padding:7px 10px;font-size:12px}
+  .btn:disabled{opacity:.55;cursor:not-allowed}
+
+  /* ---------- Cards / panels ---------- */
+  .grid{display:grid;gap:17px}
+  .metrics{grid-template-columns:repeat(4,minmax(150px,1fr))}
+  .metric,.panel,.table-wrap{
+    background:var(--white);border:1px solid var(--line);
+    box-shadow:var(--soft-shadow);border-radius:var(--card-radius);
+  }
+  .panel{transition:box-shadow .28s ease,border-color .28s ease}
+  .panel:hover{box-shadow:var(--hover-shadow);border-color:#e6ecf5}
+  .metric{
+    padding:18px 18px 18px 20px;position:relative;overflow:hidden;
+    transition:transform .28s var(--ease-out),box-shadow .28s ease,border-color .28s ease;
+  }
+  .metric::before{
+    content:"";position:absolute;left:0;top:0;bottom:0;width:4px;
+    background:var(--grad-accent);border-radius:16px 0 0 16px;
+    transition:width .28s var(--ease-out);
+  }
+  .metric:hover{transform:translateY(-4px);box-shadow:var(--hover-shadow);border-color:#e6ecf5}
+  .metric:hover::before{width:6px}
+  .metric-green::before{background:var(--grad-green)}
+  .metric-blue::before{background:var(--grad-blue)}
+  .metric-amber::before{background:var(--grad-amber)}
+  .metric-rose::before{background:var(--grad-rose)}
+  .metric-accent .v{color:#c0531d}
+  .metric-green  .v{color:#0f6b4a}
+  .metric-blue   .v{color:#1d4ed8}
+  .metric-amber  .v{color:#9a5800}
+  .metric-rose   .v{color:#ae2537}
+  #dashboardMetrics .metric{animation:metricIn .5s var(--ease-out) both}
+  @keyframes metricIn{
+    from{opacity:0;transform:translateY(14px) scale(.98)}
+    to{opacity:1;transform:translateY(0) scale(1)}
+  }
+  .metric .k{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.02em}
+  .metric .v{font-size:26px;font-weight:800;margin-top:7px;letter-spacing:-1.2px}
+  .metric .note{font-size:12px;color:var(--muted);margin-top:5px;opacity:.85}
+  .panel{padding:20px}
+  .panel h3{
+    margin:0 0 15px;font-size:15px;letter-spacing:-.2px;
+    display:flex;align-items:center;gap:9px;
+  }
+  .panel h3::before{content:"";width:4px;height:16px;border-radius:2px;background:var(--grad-accent)}
+  .dashboard-grid{grid-template-columns:1.35fr .85fr;margin-top:18px}
+  .quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .quick-grid button{
+    min-height:76px;text-align:left;justify-content:flex-start;padding:14px 15px;
+    border-radius:12px;font-size:13.5px;
+    transition:transform .22s var(--ease-out),box-shadow .22s ease,background .22s ease,border-color .22s ease;
+  }
+  .quick-grid button:hover{transform:translateY(-3px);box-shadow:var(--hover-shadow)}
+  .quick-grid button:active{transform:translateY(-1px) scale(.985)}
+  .quick-grid .btn-primary{background:var(--grad-accent);border:0}
+  .quick-grid .btn-primary:hover{filter:brightness(1.05)}
+
+  /* ---------- Forms / tables ---------- */
+  .toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:15px}
+  .field{display:grid;gap:6px}
+  .field label{font-weight:700;font-size:12px;color:#34445e}
+  .input,.select,.textarea{
+    width:100%;border:1px solid #cfd9e6;border-radius:8px;background:#fff;
+    padding:10px 11px;color:var(--ink);
+    transition:border-color .18s ease,box-shadow .18s ease;
+  }
+  .input:hover,.select:hover,.textarea:hover{border-color:#b9c6d8}
+  .input:focus,.select:focus,.textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(234,106,47,.12)}
+  .textarea{min-height:85px;resize:vertical}
+  .toolbar .input,.toolbar .select{width:auto;min-width:150px}
+  .table-wrap{overflow:auto}
+  .data-table{border-collapse:collapse;width:100%;min-width:780px}
+  .data-table th{
+    font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#718096;
+    background:#f8fafc;text-align:left;padding:12px;border-bottom:1px solid var(--line);
+  }
+  .data-table td{padding:12px;border-bottom:1px solid #edf1f5;font-size:13px;vertical-align:middle}
+  .data-table tbody tr{transition:background .18s ease}
+  .data-table tbody tr:hover{background:#f7faff}
+  .data-table tr:last-child td{border-bottom:0}
+  .actions{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;white-space:nowrap}
+  .c-green{background:#dcf6ea;color:#08734b}
+  .c-blue{background:#dbeafe;color:#1d4ed8}
+  .c-amber{background:#fff0c8;color:#9a5800}
+  .c-grey{background:#e5e7eb;color:#374151}
+  .c-red{background:#ffe1e5;color:#ae2537}
+  .c-violet{background:#f3e8ff;color:#6b21a8}
+  .empty{padding:45px 20px;text-align:center;color:var(--muted)}
+  .empty strong{display:block;color:var(--ink);font-size:16px;margin-bottom:6px}
+  .empty .btn{margin-top:15px}
+  .subtle{color:var(--muted);font-size:13px}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+  .split{display:flex;justify-content:space-between;gap:12px;align-items:center}
+  .divider{border:0;border-top:1px solid var(--line);margin:18px 0}
+  .table-note{padding:10px 12px;font-size:12.5px;color:var(--muted)}
+
+  /* Direction pill (payments table) */
+  .dir-in{color:#0f6b4a;font-weight:800}
+  .dir-out{color:#ae2537;font-weight:800}
+  .dir-move{color:#6b21a8;font-weight:800}
+
+  /* Settlement badge (rentals / history) */
+  .set-due{color:#ae2537;font-weight:800}
+  .set-refund{color:#0f6b4a;font-weight:800}
+  .set-settled{color:#0f6b4a;font-weight:800}
+
+  /* ---------- Modal ---------- */
+  .modal-backdrop{
+    position:fixed;inset:0;background:rgba(8,18,36,.58);
+    display:flex;align-items:center;justify-content:center;padding:20px;z-index:20;
+    opacity:0;visibility:hidden;pointer-events:none;
+    -webkit-backdrop-filter:blur(0px);backdrop-filter:blur(0px);
+    transition:opacity .26s ease,backdrop-filter .32s ease,
+               -webkit-backdrop-filter .32s ease,visibility 0s linear .32s;
+  }
+  .modal-backdrop.open{
+    opacity:1;visibility:visible;pointer-events:auto;
+    -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
+    transition:opacity .26s ease,backdrop-filter .32s ease,
+               -webkit-backdrop-filter .32s ease,visibility 0s;
+  }
+  .modal{
+    background:#fff;width:min(760px,100%);
+    max-height:90vh;max-height:90dvh;overflow:auto;border-radius:13px;
+    box-shadow:var(--shadow);
+    opacity:0;transform:translateY(22px) scale(.955);
+    transition:opacity .28s ease,transform .38s var(--ease-out);
+    will-change:transform,opacity;
+  }
+  .modal-backdrop.open .modal{opacity:1;transform:translateY(0) scale(1)}
+  .modal-wide{width:min(1030px,100%)}
+  .modal-head,.modal-body,.modal-foot{animation:modalContentIn .34s var(--ease-out) both}
+  .modal-body{animation-delay:.03s}
+  .modal-foot{animation-delay:.06s}
+  @keyframes modalContentIn{
+    from{opacity:0;transform:translateY(9px)}
+    to{opacity:1;transform:translateY(0)}
+  }
+  .modal-head{
+    display:flex;justify-content:space-between;align-items:center;padding:20px 22px;
+    border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;z-index:1;
+  }
+  .modal-head h2{font-size:19px;margin:0}
+  .close{
+    border:0;background:#eff3f8;width:32px;height:32px;border-radius:7px;font-size:20px;
+    line-height:1;display:grid;place-items:center;
+    transition:background .18s ease,transform .2s var(--ease-out);
+  }
+  .close:hover{background:#e2e8f1;transform:rotate(90deg)}
+  .modal-body{padding:21px 22px}
+  .modal-foot{display:flex;justify-content:flex-end;gap:10px;padding:17px 22px;border-top:1px solid var(--line);flex-wrap:wrap}
+
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+  .form-grid .full{grid-column:1/-1}
+  .form-error{font-size:12px;color:var(--danger);min-height:16px;margin-top:8px}
+  .summary-box{
+    background:#fff7f2;border:1px solid #ffd7c3;border-radius:10px;padding:15px;
+    display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:15px;
+  }
+  .summary-box b{display:block;font-size:16px;margin-top:4px}
+  .summary-box .hi-refund b{color:#0f6b4a}
+  .summary-box .hi-due b{color:#ae2537}
+  .photo-preview{display:none;width:96px;height:68px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+
+  /* ---------- Toast ---------- */
+  .toast{
+    position:fixed;right:22px;bottom:20px;z-index:40;background:#162b46;color:#fff;
+    padding:13px 16px;border-radius:9px;box-shadow:var(--shadow);max-width:380px;
+    opacity:0;transform:translateY(16px) scale(.96);pointer-events:none;
+    transition:opacity .26s ease,transform .36s var(--ease-out);
+  }
+  .toast.show{opacity:1;transform:translateY(0) scale(1)}
+  .toast.error{background:#9d2434}
+
+  /* ---------- Calendar ---------- */
+  .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .cal-label,.cal-day{padding:9px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .cal-label{font-size:11px;font-weight:800;background:#f7f9fc;color:var(--muted)}
+  .cal-day{min-height:104px;font-size:12px}
+  .cal-day:nth-child(7n){border-right:0}
+  .cal-day.is-today{background:#fff8f3}
+  .cal-num{font-weight:800}
+  .cal-num.is-today{color:var(--accent)}
+  .event{
+    font-size:10px;padding:3px 4px;border-radius:4px;margin-top:4px;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap;cursor:pointer;
+    transition:transform .16s var(--ease-out),filter .16s ease;
+  }
+  .event:hover{transform:translateX(2px);filter:brightness(.95)}
+  .event.pick{background:#dbeafe;color:#15479f}
+  .event.return{background:#dcf6ea;color:#076841}
+  .event.reserve{background:#fff0c8;color:#915100}
+  .event.late{background:#ffe1e5;color:#ae2537;font-weight:800}
+
+  /* ---------- Charts / receipt ---------- */
+  .chart{width:100%;min-height:210px}
+  .bars{display:flex;align-items:end;gap:10px;height:200px;padding:15px 5px 0;border-bottom:1px solid var(--line)}
+  .bar-wrap{height:100%;flex:1;display:flex;flex-direction:column;justify-content:end;align-items:center;min-width:24px}
+  .bar{width:min(100%,40px);background:var(--accent);border-radius:5px 5px 0 0;min-height:2px;transition:filter .18s ease}
+  .bar-wrap:hover .bar{filter:brightness(1.1)}
+  .bar-label{font-size:10px;color:var(--muted);margin-top:6px;white-space:nowrap}
+  .receipt{max-width:620px;margin:auto}
+  .receipt-title{text-align:center;border-bottom:2px dashed var(--line);padding-bottom:13px}
+  .receipt-line{display:flex;justify-content:space-between;gap:20px;padding:7px 0}
+  .receipt-total{font-size:18px;font-weight:800;border-top:2px solid var(--ink);margin-top:10px;padding-top:12px}
+  .receipt-sub{border-top:1px dashed var(--line);margin-top:10px;padding-top:6px}
+  .warn{padding:10px 12px;background:#fff4d7;border:1px solid #f7d983;border-radius:8px;font-size:13px;color:#80520b}
+  .warn.danger{background:#fff0f1;border-color:#ffd4d9;color:#9d2434}
+  .info{padding:10px 12px;background:#eef4ff;border:1px solid #cddffd;border-radius:8px;font-size:13px;color:#1d4ed8}
+
+  #dashboardRevenue{
+    padding:12px 14px;background:#f8fafc;border:1px dashed var(--line);
+    border-radius:10px;line-height:1.6;
+  }
+  #dashboardRevenue b{color:#c0531d;font-size:15px}
+
+  /* ---------- Responsive ---------- */
+  @media(max-width:900px){
+    .sidebar{width:64px;padding:18px 8px}
+    .brand span,.brand-name,.nav span:not(.nav-icon),.nav-label,.sidebar-foot{display:none}
+    .brand{padding:0 6px 24px}
+    .workspace{width:calc(100% - 64px)}
+    .nav button{justify-content:center;padding:12px}
+    .metrics{grid-template-columns:repeat(2,1fr)}
+    .dashboard-grid{grid-template-columns:1fr}
+    .topbar{padding:14px 18px}
+    .content{padding:22px 18px}
+    .search{width:180px}
+  }
+  @media(max-width:620px){
+    .topbar h1{font-size:18px}
+    .search{display:none}
+    .metrics,.two-col,.three-col,.form-grid,.summary-box{grid-template-columns:1fr}
+    .form-grid .full{grid-column:auto}
+    .view-head{align-items:flex-start;flex-direction:column}
+    .content{padding:17px 12px}
+    .cal-day{min-height:75px;padding:5px}
+    .cal-label{padding:7px 4px;font-size:9px}
+    .event{font-size:9px}
+    .modal-backdrop{padding:8px}
+    .modal{max-height:92vh;max-height:92dvh}
+  }
+
+  /* ---------- Print ---------- */
+  @media print{
+    .sidebar,.topbar,.view:not(.print-target),.modal-head,.modal-foot,.toast{display:none!important}
+    .modal-backdrop{
+      position:static;display:block!important;background:#fff;padding:0;
+      opacity:1!important;visibility:visible!important;
+      -webkit-backdrop-filter:none;backdrop-filter:none;
+    }
+    .modal{
+      box-shadow:none;width:100%;max-height:none;opacity:1!important;
+      transform:none!important;animation:none!important;transition:none!important;
+    }
+    .modal-head,.modal-body,.modal-foot{animation:none!important}
+    .modal-body{padding:0}
+    .receipt{max-width:none}
+  }
+
+  /* ---------- Reduced motion ---------- */
+  @media (prefers-reduced-motion: reduce){
+    .view.active,.metric,.modal-head,.modal-body,.modal-foot{animation:none!important}
+    .modal,.modal-backdrop,.toast,.btn,.nav button,.close,.event,.bar,.metric,.panel,.quick-grid button{
+      transition-duration:.01ms!important;
+    }
+    .modal{transform:none}
+    .modal-backdrop.open .modal{transform:none}
+    .toast{transform:none}
+    .close:hover{transform:none}
+    .event:hover{transform:none}
+    .metric:hover{transform:none}
+    .panel:hover{box-shadow:var(--soft-shadow)}
+    .quick-grid button:hover{transform:none}
+  }
+</style>
+</head>
+
+<body>
+<div class="app">
+  <aside class="sidebar" aria-label="Primary navigation">
+    <div class="brand">
+      <div class="brand-mark">R</div>
+      <span class="brand-name">RentalTrack</span>
+    </div>
+    <div class="nav-label">Workspace</div>
+    <nav class="nav">
+      <button class="active" data-view="dashboard"><span class="nav-icon">▦</span><span>Dashboard</span></button>
+      <button data-view="vehicles"><span class="nav-icon">▣</span><span>Vehicles</span></button>
+      <button data-view="customers"><span class="nav-icon">♙</span><span>Customers</span></button>
+      <button data-view="rentals"><span class="nav-icon">↗</span><span>Rentals</span></button>
+      <button data-view="payments"><span class="nav-icon">₹</span><span>Payments</span></button>
+      <button data-view="calendar"><span class="nav-icon">□</span><span>Calendar</span></button>
+      <button data-view="history"><span class="nav-icon">☷</span><span>Rental History</span></button>
+      <button data-view="reports"><span class="nav-icon">◔</span><span>Reports</span></button>
+      <button data-view="backup"><span class="nav-icon">⇩</span><span>Backup &amp; Restore</span></button>
+    </nav>
+    <div class="sidebar-foot">
+      Rental management,<br>
+      Developed By ~ Shankar Prasad Pyke
+    </div>
+  </aside>
+
+  <div class="workspace">
+    <header class="topbar">
+      <h1 id="moduleTitle">Dashboard</h1>
+      <div class="top-actions">
+        <input class="search" id="globalSearch" type="search" aria-label="Search current module" placeholder="Search this module">
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- ================= DASHBOARD ================= -->
+      <section class="view active" id="dashboard">
+        <div class="view-head">
+          <div>
+            <h2>Business overview</h2>
+            <p>Your local rental operation at a glance.</p>
+          </div>
+        </div>
+        <div class="grid metrics" id="dashboardMetrics"></div>
+        <div class="grid dashboard-grid">
+          <section class="panel">
+            <div class="split">
+              <h3>Recent rentals</h3>
+              <button class="btn btn-small btn-secondary" onclick="showView('history')">View history</button>
+            </div>
+            <div id="recentRentals"></div>
+          </section>
+          <aside class="panel">
+            <h3>Quick actions</h3>
+            <div class="quick-grid">
+              <button class="btn btn-primary" onclick="openRentalModal()">↗ New Rental</button>
+              <button class="btn btn-secondary" onclick="openVehicleModal()">+ Add Vehicle</button>
+              <button class="btn btn-secondary" onclick="openCustomerModal()">+ Add Customer</button>
+              <button class="btn btn-secondary" onclick="exportBackup()">⇩ Export Backup</button>
+            </div>
+            <hr class="divider">
+            <div id="dashboardRevenue" class="subtle"></div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ================= VEHICLES ================= -->
+      <section class="view" id="vehicles">
+        <div class="view-head">
+          <div>
+            <h2>Vehicles</h2>
+            <p>Manage your fleet. Availability is derived automatically from bookings, never typed in by hand.</p>
+          </div>
+          <button class="btn btn-primary" onclick="openVehicleModal()">+ Add Vehicle</button>
+        </div>
+        <div class="toolbar">
+          <input class="input" id="vehicleSearch" placeholder="Search name, registration…" oninput="renderActive()">
+          <select class="select" id="vehicleFilter" onchange="renderActive()">
+            <option value="">All statuses</option>
+            <option>Available</option><option>Rented</option><option>Reserved</option><option>Inactive</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Vehicle</th><th>Type</th><th>Rate / day</th><th>Deposit</th><th>KM</th><th>Status</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="vehiclesBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= CUSTOMERS ================= -->
+      <section class="view" id="customers">
+        <div class="view-head">
+          <div>
+            <h2>Customers</h2>
+            <p>Keep customer and licence details ready for every booking.</p>
+          </div>
+          <button class="btn btn-primary" onclick="openCustomerModal()">+ Add Customer</button>
+        </div>
+        <div class="toolbar">
+          <input class="input" id="customerSearch" placeholder="Search name, phone or licence…" oninput="renderActive()">
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Customer</th><th>Phone</th><th>Licence</th><th>Rentals</th>
+                <th>Customer owes you</th><th>You owe (refunds)</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="customersBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= RENTALS ================= -->
+      <section class="view" id="rentals">
+        <div class="view-head">
+          <div>
+            <h2>Rentals</h2>
+            <p>Create bookings, manage returns, and monitor active hires.</p>
+          </div>
+          <button class="btn btn-primary" onclick="openRentalModal()">↗ New Rental</button>
+        </div>
+        <div class="toolbar">
+          <input class="input" id="rentalSearch" placeholder="Search customer or vehicle…" oninput="renderActive()">
+          <select class="select" id="rentalStatusFilter" onchange="renderActive()">
+            <option value="">All rental statuses</option>
+            <option>Reserved</option><option>Active</option><option>Completed</option><option>Cancelled</option>
+          </select>
+          <select class="select" id="rentalPayFilter" onchange="renderActive()">
+            <option value="">All payment statuses</option>
+            <option>Pending</option><option>Partial</option><option>Paid</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Customer</th><th>Vehicle &amp; period</th><th>Charge</th>
+                <th>Paid</th><th>Settlement</th><th>Deposit held</th><th>Status</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="rentalsBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= PAYMENTS ================= -->
+      <section class="view" id="payments">
+        <div class="view-head">
+          <div>
+            <h2>Payments</h2>
+            <p>Every payment and refund is stored as its own record with an explicit direction. Deposit applications are internal transfers, never income.</p>
+          </div>
+          <button class="btn btn-primary" onclick="openPaymentModal('')">+ Record payment / refund</button>
+        </div>
+        <div class="toolbar">
+          <input class="input" id="paymentSearch" placeholder="Search customer, vehicle, method…" oninput="renderActive()">
+          <select class="select" id="paymentKindFilter" onchange="renderActive()">
+            <option value="">All entries</option>
+            <option value="payment">↓ Received from customer</option>
+            <option value="refund">↑ Refund to customer</option>
+            <option value="adjustment">↔ Deposit applied to rent</option>
+          </select>
+          <input class="input" id="paymentFrom" type="date" onchange="renderActive()">
+          <input class="input" id="paymentTo" type="date" onchange="renderActive()">
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date</th><th>Rental</th><th>Customer / Vehicle</th><th>Direction</th>
+                <th>Amount</th><th>Applied to rental</th><th>Applied to deposit</th><th>Method</th><th>Note</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="paymentsBody"></tbody>
+          </table>
+        </div>
+        <div class="table-note" id="paymentsTotals"></div>
+      </section>
+
+      <!-- ================= CALENDAR ================= -->
+      <section class="view" id="calendar">
+        <div class="view-head">
+          <div>
+            <h2>Calendar</h2>
+            <p>Upcoming pickups, returns, and reservations. Cancelled bookings are hidden.</p>
+          </div>
+          <div class="actions">
+            <button class="btn btn-secondary" onclick="changeMonth(-1)">← Previous</button>
+            <button class="btn btn-secondary" onclick="changeMonth(1)">Next →</button>
+          </div>
+        </div>
+        <section class="panel">
+          <div class="split">
+            <h3 id="calendarMonth"></h3>
+            <div class="subtle">Blue pickup · Green return · Orange reservation · Red overdue</div>
+          </div>
+          <div class="calendar-grid" id="calendarGrid"></div>
+        </section>
+        <section class="panel" style="margin-top:18px">
+          <h3>Events this month</h3>
+          <div id="calendarList"></div>
+        </section>
+      </section>
+
+      <!-- ================= HISTORY ================= -->
+      <section class="view" id="history">
+        <div class="view-head">
+          <div>
+            <h2>Rental History</h2>
+            <p>Search and review every booking record.</p>
+          </div>
+        </div>
+        <div class="toolbar">
+          <input class="input" id="historySearch" placeholder="Search customer or vehicle" oninput="renderActive()">
+          <input class="input" id="historyStart" type="date" onchange="renderActive()">
+          <input class="input" id="historyEnd" type="date" onchange="renderActive()">
+          <select class="select" id="historyPay" onchange="renderActive()">
+            <option value="">All payment statuses</option>
+            <option>Paid</option><option>Pending</option><option>Partial</option>
+          </select>
+          <select class="select" id="historyState" onchange="renderActive()">
+            <option value="">All states</option>
+            <option>Reserved</option><option>Active</option><option>Completed</option><option>Cancelled</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Booked</th><th>Customer</th><th>Vehicle</th><th>Pickup → Return</th>
+                <th>Charge</th><th>Paid</th><th>Settlement</th><th>Status</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= REPORTS ================= -->
+      <section class="view" id="reports">
+        <div class="view-head">
+          <div>
+            <h2>Reports</h2>
+            <p>Money collected, charges booked, outstanding balances, refunds and deposits are reported separately — never blended into one figure.</p>
+          </div>
+          <button class="btn btn-secondary" onclick="window.print()">Print Report</button>
+        </div>
+        <div class="toolbar">
+          <select class="select" id="reportRange" onchange="setReportRange()">
+            <option value="month">This month</option>
+            <option value="today">Today</option>
+            <option value="week">This week</option>
+            <option value="custom">Custom range</option>
+          </select>
+          <input class="input" id="reportStart" type="date" onchange="reportDateChanged()">
+          <input class="input" id="reportEnd" type="date" onchange="reportDateChanged()">
+        </div>
+        <div class="form-error" id="reportError"></div>
+        <div class="grid metrics" id="reportMetrics"></div>
+        <div class="two-col" style="margin-top:18px">
+          <section class="panel">
+            <h3>Rental charges booked by pickup day</h3>
+            <div class="chart" id="revenueChart"></div>
+          </section>
+          <section class="panel">
+            <h3>Rentals by vehicle</h3>
+            <div class="chart" id="vehicleChart"></div>
+          </section>
+        </div>
+      </section>
+
+      <!-- ================= BACKUP ================= -->
+      <section class="view" id="backup">
+        <div class="view-head">
+          <div>
+            <h2>Backup &amp; Restore</h2>
+            <p>Your records are saved only in this browser. Backups are important because data does not sync between computers.</p>
+          </div>
+        </div>
+        <div class="two-col">
+          <section class="panel">
+            <h3>Backup</h3>
+            <p class="subtle">A complete backup contains vehicles, customers, rentals, payments and settings.</p>
+            <div class="actions">
+              <button class="btn btn-primary" onclick="exportBackup()">⇩ Export Backup (JSON)</button>
+              <button class="btn btn-secondary" onclick="exportCustomersCSV()">Export Customers CSV</button>
+              <button class="btn btn-secondary" onclick="exportRentalsCSV()">Export Rentals CSV</button>
+              <button class="btn btn-secondary" onclick="exportPaymentsCSV()">Export Payments CSV</button>
+            </div>
+            <hr class="divider">
+            <h3>Restore</h3>
+            <p class="subtle">The file is fully validated before anything is replaced.</p>
+            <label class="field">
+              <span>Select RentalTrack backup JSON</span>
+              <input class="input" type="file" id="importFile" accept="application/json, .json" onchange="previewImport(event)">
+            </label>
+            <div id="importPreview" class="subtle" style="margin-top:10px"></div>
+          </section>
+
+          <section class="panel">
+            <h3>Business settings</h3>
+            <form id="settingsForm">
+              <div class="field">
+                <label for="businessName">Business display name</label>
+                <input class="input" id="businessName" maxlength="80">
+              </div>
+              <div class="field" style="margin-top:12px">
+                <label for="currencySymbol">Currency symbol</label>
+                <input class="input" id="currencySymbol" maxlength="5">
+              </div>
+              <div class="field" style="margin-top:12px">
+                <label for="billingRule">Rental duration rule</label>
+                <select class="select" id="billingRule">
+                  <option value="24h">Per 24-hour period (rounded up)</option>
+                  <option value="calendar">Per calendar day (pickup date to return date)</option>
+                </select>
+                <span class="subtle">This single rule is used for the booking preview, the saved bill, receipts and reports.</span>
+              </div>
+              <div class="field" style="margin-top:12px">
+                <label for="dateFormat">Date display</label>
+                <select class="select" id="dateFormat">
+                  <option value="en-IN">Indian local format</option>
+                  <option value="iso">ISO (YYYY-MM-DD)</option>
+                </select>
+              </div>
+              <div class="actions" style="margin-top:14px">
+                <button class="btn btn-primary" type="submit">Save settings</button>
+              </div>
+            </form>
+            <hr class="divider">
+            <h3>Optional demo data</h3>
+            <p class="subtle">Demo records are tagged and kept completely separate. Clearing demo data never removes real business records.</p>
+            <div class="actions">
+              <button class="btn btn-secondary" onclick="loadDemoData()">Load demo data</button>
+              <button class="btn btn-danger" onclick="clearDemoData()">Clear demo data</button>
+            </div>
+            <hr class="divider">
+            <button class="btn btn-danger" onclick="confirmReset()">Clear all data</button>
+          </section>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"></div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  /* ================================================================== *
+   * Constants & state
+   * ================================================================== */
+  const KEY = "rentaltrack.v2";
+  const VERSION = 2;
+  const RENTAL_STATUSES = ["Reserved", "Active", "Completed", "Cancelled"];
+  const PAYMENT_METHODS = ["Cash", "UPI", "Card", "Bank Transfer", "Other"];
+  const PAYMENT_KINDS = ["payment", "refund", "adjustment"];
+  const MAX_PHOTO_BYTES = 1.8 * 1024 * 1024;
+  const DAY_MS = 86400000;
+
+  let data = null;
+  let activeView = "dashboard";
+  let calendarCursor = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  let modalReturnFocus = null;
+  let pendingImport = null;
+  let formBusy = false;
+  let storageWarningShown = false;
+
+  /* ================================================================== *
+   * Tiny utilities
+   * ================================================================== */
+  const uid = (p) => p + "_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
+  const nowISO = () => new Date().toISOString();
+  const pad2 = (n) => String(n).padStart(2, "0");
+
+  function num(v) {
+    if (typeof v === "number") return Number.isFinite(v) ? v : NaN;
+    if (typeof v === "string") {
+      const t = v.trim();
+      if (!t) return NaN;
+      const n = Number(t);
+      return Number.isFinite(n) ? n : NaN;
+    }
+    return NaN;
+  }
+  const toNum = (v, d = 0) => { const n = num(v); return Number.isFinite(n) ? n : d; };
+  const round2 = (v) => { const n = Number(v); return Number.isFinite(n) ? Math.round((n + Number.EPSILON) * 100) / 100 : 0; };
+  const str = (v, max = 400) => String(v ?? "").trim().slice(0, max);
+  const nonNeg = (v, d = 0) => { const n = num(v); return Number.isFinite(n) && n >= 0 ? round2(n) : d; };
+
+  function esc(v) {
+    return String(v ?? "").replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[m]));
+  }
+  const val = (id) => { const el = document.getElementById(id); return el ? el.value : ""; };
+  const el = (id) => document.getElementById(id);
+
+  function validISO(v) {
+    if (typeof v !== "string" || !v) return "";
+    const d = new Date(v);
+    return isNaN(d.getTime()) ? "" : d.toISOString();
+  }
+
+  /* ---------- local-time-safe date helpers ---------- */
+  function localDateStr(d = new Date()) {
+    return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+  }
+  function isoDatePart(iso) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    return isNaN(d.getTime()) ? "" : localDateStr(d);
+  }
+  function toLocalInput(iso) {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return "";
+    return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()) +
+      "T" + pad2(d.getHours()) + ":" + pad2(d.getMinutes());
+  }
+  function fromLocalInput(v) {
+    if (!v) return "";
+    const d = new Date(v);
+    return isNaN(d.getTime()) ? "" : d.toISOString();
+  }
+  function parseDateOnly(s) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || ""));
+    if (!m) return null;
+    const d = new Date(+m[1], +m[2] - 1, +m[3]);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  function fmtDateTime(iso) {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return "—";
+    return d.toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  }
+  function fmtDate(iso) {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return "—";
+    if (data && data.settings.dateFormat === "iso") return localDateStr(d);
+    return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  }
+  function fmtDateOnly(s) {
+    const d = parseDateOnly(s);
+    if (!d) return "—";
+    if (data && data.settings.dateFormat === "iso") return s;
+    return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  }
+  function money(v) {
+    const n = toNum(v, 0);
+    return (data.settings.currency || "₹") + n.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  }
+
+  /* ---------- billing duration — the single rule used everywhere ---------- */
+  function billableDays(pickupISO, returnISO, ruleOverride) {
+    const a = new Date(pickupISO), b = new Date(returnISO);
+    if (isNaN(a.getTime()) || isNaN(b.getTime()) || b <= a) return 1;
+    const rule = ruleOverride || (data && data.settings ? data.settings.billingRule : "24h");
+    if (rule === "calendar") {
+      const d1 = new Date(a.getFullYear(), a.getMonth(), a.getDate());
+      const d2 = new Date(b.getFullYear(), b.getMonth(), b.getDate());
+      return Math.max(1, Math.round((d2 - d1) / DAY_MS));
+    }
+    return Math.max(1, Math.ceil((b - a) / DAY_MS));
+  }
+
+  /* ================================================================== *
+   * Normalisation / migration
+   * ================================================================== */
+  function blank() {
+    return {
+      version: VERSION,
+      vehicles: [], customers: [], rentals: [], payments: [],
+      settings: {
+        businessName: "RentalTrack",
+        currency: "₹",
+        dateFormat: "en-IN",
+        billingRule: "24h",
+        demoLoaded: false
+      }
+    };
+  }
+
+  function nSettings(x) {
+    const b = blank().settings;
+    if (!x || typeof x !== "object") return b;
+    return {
+      businessName: str(x.businessName, 80) || "RentalTrack",
+      currency: str(x.currency, 5) || "₹",
+      dateFormat: x.dateFormat === "iso" ? "iso" : "en-IN",
+      billingRule: x.billingRule === "calendar" ? "calendar" : "24h",
+      demoLoaded: !!x.demoLoaded
+    };
+  }
+
+  function nVehicle(x) {
+    if (!x || typeof x !== "object") return null;
+    const rate = num(x.dailyRate);
+    return {
+      id: (typeof x.id === "string" && x.id) ? x.id : uid("veh"),
+      type: x.type === "Bike" ? "Bike" : "Car",
+      name: str(x.name, 90),
+      registration: str(x.registration, 30),
+      model: str(x.model, 60),
+      year: str(x.year, 6),
+      fuel: str(x.fuel, 30),
+      dailyRate: Number.isFinite(rate) && rate >= 0 ? round2(rate) : 0,
+      deposit: nonNeg(x.deposit, 0),
+      currentKm: nonNeg(x.currentKm, 0),
+      active: x.active === false ? false : !x.manualInactive,
+      notes: str(x.notes, 600),
+      photo: typeof x.photo === "string" ? x.photo : "",
+      demo: !!x.demo,
+      createdAt: validISO(x.createdAt) || nowISO(),
+      updatedAt: validISO(x.updatedAt) || nowISO()
+    };
+  }
+
+  function nCustomer(x) {
+    if (!x || typeof x !== "object") return null;
+    const exp = String(x.licenceExpiry || "").slice(0, 10);
+    return {
+      id: (typeof x.id === "string" && x.id) ? x.id : uid("cus"),
+      name: str(x.name, 90),
+      phone: str(x.phone, 30),
+      address: str(x.address, 400),
+      licence: str(x.licence, 40),
+      licenceExpiry: parseDateOnly(exp) ? exp : "",
+      idProof: str(x.idProof, 120),
+      notes: str(x.notes, 600),
+      archived: !!x.archived,
+      demo: !!x.demo,
+      createdAt: validISO(x.createdAt) || nowISO(),
+      updatedAt: validISO(x.updatedAt) || nowISO()
+    };
+  }
+
+  function nRental(x) {
+    if (!x || typeof x !== "object") return null;
+    const pickup = validISO(x.pickup);
+    const ret = validISO(x.return);
+    if (!pickup || !ret) return null;
+    const status = RENTAL_STATUSES.includes(x.status) ? x.status : "Reserved";
+    const endingKm = num(x.endingKm);
+    return {
+      id: (typeof x.id === "string" && x.id) ? x.id : uid("rent"),
+      customerId: str(x.customerId, 60),
+      vehicleId: str(x.vehicleId, 60),
+      pickup, return: ret,
+      dailyRate: nonNeg(x.dailyRate, 0),
+      discount: nonNeg(x.discount, 0),
+      extraCharge: nonNeg(x.extraCharge, 0),
+      securityDeposit: nonNeg(x.securityDeposit !== undefined ? x.securityDeposit : x.deposit, 0),
+      status,
+      actualReturnAt: validISO(x.actualReturnAt) || "",
+      endingKm: Number.isFinite(endingKm) && endingKm >= 0 ? round2(endingKm) : null,
+      returnNotes: str(x.returnNotes, 500),
+      cancelReason: str(x.cancelReason, 200),
+      cancelledAt: validISO(x.cancelledAt) || "",
+      notes: str(x.notes, 600),
+      demo: !!x.demo,
+      createdAt: validISO(x.createdAt) || nowISO(),
+      updatedAt: validISO(x.updatedAt) || nowISO()
+    };
+  }
+
+  function nPayment(x) {
+    if (!x || typeof x !== "object") return null;
+    const amount = num(x.amount);
+    if (!Number.isFinite(amount) || amount <= 0) return null;
+    const rp = num(x.rentalPortion);
+    const dp = num(x.depositPortion);
+    const kind = x.kind === "refund" ? "refund" : (x.kind === "adjustment" ? "adjustment" : "payment");
+    return {
+      id: (typeof x.id === "string" && x.id) ? x.id : uid("pay"),
+      rentalId: str(x.rentalId, 60),
+      kind,
+      amount: round2(amount),
+      rentalPortion: Number.isFinite(rp) ? round2(Math.max(0, rp)) : null,
+      depositPortion: Number.isFinite(dp) ? round2(Math.max(0, dp)) : null,
+      method: str(x.method, 30) || "Cash",
+      date: validISO(x.date) || nowISO(),
+      note: str(x.note, 200),
+      demo: !!x.demo,
+      createdAt: validISO(x.createdAt) || nowISO()
+    };
+  }
+
+  function dedupeById(list) {
+    const seen = new Set();
+    for (let i = list.length - 1; i >= 0; i--) {
+      if (seen.has(list[i].id)) list.splice(i, 1);
+      else seen.add(list[i].id);
+    }
+    return list;
+  }
+
+  function allocateLegacyPortions(rentals, payments, rule) {
+    const byRental = new Map();
+    payments.forEach((p) => {
+      if (!byRental.has(p.rentalId)) byRental.set(p.rentalId, []);
+      byRental.get(p.rentalId).push(p);
+    });
+
+    byRental.forEach((list, rid) => {
+      const r = rentals.find((x) => x.id === rid);
+      if (!r) return;
+      list.sort((a, b) => new Date(a.date) - new Date(b.date));
+      const days = billableDays(r.pickup, r.return, rule);
+      const charge = Math.max(0, round2(days * r.dailyRate - r.discount + r.extraCharge));
+      let paidTowardsRental = 0;
+
+      list.forEach((p) => {
+        if (Number.isFinite(p.rentalPortion) && Number.isFinite(p.depositPortion)) {
+          if (p.kind === "payment") paidTowardsRental += p.rentalPortion;
+          else if (p.kind === "refund") paidTowardsRental -= p.rentalPortion;
+          else if (p.kind === "adjustment") paidTowardsRental += p.rentalPortion;
+          return;
+        }
+        if (p.kind === "adjustment") {
+          p.rentalPortion = p.amount;
+          p.depositPortion = p.amount;
+        } else if (p.kind === "refund") {
+          p.rentalPortion = 0;
+          p.depositPortion = p.amount;
+        } else {
+          const room = Math.max(0, charge - paidTowardsRental);
+          const rp = Math.min(p.amount, room);
+          p.rentalPortion = round2(rp);
+          p.depositPortion = round2(p.amount - rp);
+          paidTowardsRental += rp;
+        }
+      });
+    });
+
+    payments.forEach((p) => {
+      if (!Number.isFinite(p.rentalPortion) || !Number.isFinite(p.depositPortion)) {
+        p.rentalPortion = 0;
+        p.depositPortion = p.amount;
+      }
+    });
+  }
+
+  function normalize(raw) {
+    const b = blank();
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return b;
+
+    const settings = nSettings(raw.settings);
+    const vehicles = dedupeById((Array.isArray(raw.vehicles) ? raw.vehicles : []).map(nVehicle).filter(Boolean));
+    const customers = dedupeById((Array.isArray(raw.customers) ? raw.customers : []).map(nCustomer).filter(Boolean));
+    const rentals = dedupeById((Array.isArray(raw.rentals) ? raw.rentals : []).map(nRental).filter(Boolean));
+    const payments = dedupeById((Array.isArray(raw.payments) ? raw.payments : []).map(nPayment).filter(Boolean));
+
+    const rentalIds = new Set(rentals.map((r) => r.id));
+    const linked = payments.filter((p) => rentalIds.has(p.rentalId));
+    allocateLegacyPortions(rentals, linked, settings.billingRule);
+
+    return { version: VERSION, vehicles, customers, rentals, payments: linked, settings };
+  }
+
+  /* ================================================================== *
+   * Persistence
+   * ================================================================== */
+  function load() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (!raw) return blank();
+      return normalize(JSON.parse(raw));
+    } catch (e) {
+      console.error(e);
+      storageWarningShown = true;
+      return blank();
+    }
+  }
+
+  function save() {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(data));
+      return true;
+    } catch (e) {
+      console.error(e);
+      toast("Your change could NOT be saved. Browser storage may be full or blocked.", "error");
+      return false;
+    }
+  }
+
+  function afterChange(successMessage) {
+    syncRentalStatuses();
+    if (!save()) {
+      data = load();
+      syncRentalStatuses();
+      renderActive();
+      return false;
+    }
+    if (successMessage) toast(successMessage);
+    renderActive();
+    return true;
+  }
+
+  /* ================================================================== *
+   * Lookups
+   * ================================================================== */
+  const customer = (id) => data.customers.find((x) => x.id === id) || null;
+  const vehicle = (id) => data.vehicles.find((x) => x.id === id) || null;
+  const rental = (id) => data.rentals.find((x) => x.id === id) || null;
+  const paymentsFor = (rentalId) => data.payments.filter((p) => p.rentalId === rentalId);
+
+  /* ================================================================== *
+   * Core business calculations
+   * ================================================================== */
+
+  /**
+   * Rental charge, deposit and payment totals derived 100% from payment records.
+   *
+   * Payment record kinds:
+   *   "payment"    — customer → business. Cash movement in. Counts as income.
+   *   "refund"     — business → customer. Cash movement out. Reduces deposit or rent paid.
+   *   "adjustment" — internal transfer of security deposit into rent. NOT cash.
+   */
+  function rentalMoney(r) {
+    const days = billableDays(r.pickup, r.return);
+    const subtotal = round2(days * toNum(r.dailyRate, 0));
+    const discount = round2(toNum(r.discount, 0));
+    const extra = round2(toNum(r.extraCharge, 0));
+    const charge = round2(Math.max(0, subtotal - discount + extra));
+    const depositDue = round2(toNum(r.securityDeposit, 0));
+
+    let rentalPaid = 0, depositPaid = 0, rentalRefunded = 0, depositRefunded = 0, depositApplied = 0;
+    let collected = 0, refunded = 0;
+
+    paymentsFor(r.id).forEach((p) => {
+      if (p.kind === "refund") {
+        rentalRefunded += p.rentalPortion;
+        depositRefunded += p.depositPortion;
+        refunded += p.amount;
+      } else if (p.kind === "adjustment") {
+        rentalPaid += p.rentalPortion;
+        depositApplied += p.depositPortion;
+      } else {
+        rentalPaid += p.rentalPortion;
+        depositPaid += p.depositPortion;
+        collected += p.amount;
+      }
+    });
+
+    const netRentalPaid = round2(rentalPaid - rentalRefunded);
+    const rentalBalance = round2(Math.max(0, charge - netRentalPaid));
+    const depositHeld = round2(Math.max(0, depositPaid - depositRefunded - depositApplied));
+    const depositOutstanding = round2(Math.max(0, depositDue - depositPaid));
+    const totalReceived = round2(collected - refunded);
+
+    let paymentStatus;
+    if (charge <= 0) paymentStatus = "Paid";
+    else if (netRentalPaid >= charge) paymentStatus = "Paid";
+    else if (netRentalPaid > 0) paymentStatus = "Partial";
+    else paymentStatus = "Pending";
+
+    return {
+      days, subtotal, discount, extra, charge, depositDue,
+      rentalPaid: netRentalPaid, depositPaid: round2(depositPaid),
+      depositRefunded: round2(depositRefunded),
+      depositApplied: round2(depositApplied),
+      depositHeld, depositOutstanding, rentalBalance, totalReceived,
+      collected: round2(collected), refunded: round2(refunded),
+      totalPayable: round2(charge + depositDue),
+      paymentStatus
+    };
+  }
+
+  /**
+   * Final settlement for returning a rental.
+   */
+  function settlementFor(r, opts = {}) {
+    const atISO = opts.actualReturnISO || r.return;
+
+    const baseDays = billableDays(r.pickup, r.return);
+    const actualDays = billableDays(r.pickup, atISO);
+    const lateDays = Math.max(0, actualDays - baseDays);
+    const suggestedLateFee = round2(lateDays * toNum(r.dailyRate, 0));
+
+    const subtotal = round2(baseDays * toNum(r.dailyRate, 0));
+    const discount = round2(toNum(r.discount, 0));
+    const rawExtra = opts.extraCharge;
+    const extra = round2(Math.max(0, Number.isFinite(rawExtra) ? rawExtra : toNum(r.extraCharge, 0)));
+    const charge = round2(Math.max(0, subtotal - discount + extra));
+
+    const m = rentalMoney(r);
+    const rentalPaid = m.rentalPaid;
+    const depositHeld = m.depositHeld;
+
+    const outstandingRent = round2(Math.max(0, charge - rentalPaid));
+    const maxDeduction = round2(Math.min(depositHeld, outstandingRent));
+
+    const rawDeduction = Number.isFinite(opts.deduction) ? opts.deduction : 0;
+    const requestedDeduction = round2(Math.max(0, rawDeduction));
+    const deduction = round2(Math.min(requestedDeduction, maxDeduction));
+
+    const additionalPayment = round2(Math.max(0, outstandingRent - deduction));
+    const depositRefund = round2(Math.max(0, depositHeld - deduction));
+
+    return {
+      atISO, baseDays, actualDays, lateDays, suggestedLateFee,
+      subtotal, discount, extra, charge,
+      rentalPaid, depositHeld,
+      outstandingRent, maxDeduction, requestedDeduction, deduction,
+      additionalPayment, depositRefund
+    };
+  }
+
+  /**
+   * Returns a clear obligation descriptor for a rental.
+   *   direction: "customer-owes" | "refund-due" | "settled" | "open"
+   */
+  function settlementInfo(r) {
+    const m = rentalMoney(r);
+    if (r.status === "Cancelled") {
+      return { direction: "cancelled", amount: 0, m };
+    }
+    if (r.status === "Completed") {
+      if (m.rentalBalance > 0) return { direction: "customer-owes", amount: m.rentalBalance, m };
+      if (m.depositHeld > 0) return { direction: "refund-due", amount: m.depositHeld, m };
+      return { direction: "settled", amount: 0, m };
+    }
+    if (m.rentalBalance > 0) return { direction: "open", amount: m.rentalBalance, m };
+    return { direction: "open-clear", amount: 0, m };
+  }
+
+  function settlementLabel(info) {
+    switch (info.direction) {
+      case "customer-owes": return `<span class="set-due">Customer owes ${money(info.amount)}</span>`;
+      case "refund-due":    return `<span class="set-refund">Refund due ${money(info.amount)}</span>`;
+      case "settled":       return `<span class="set-settled">Settled ✓</span>`;
+      case "open":          return `<span class="subtle">Open — balance ${money(info.amount)}</span>`;
+      case "open-clear":    return `<span class="subtle">Open — fully paid</span>`;
+      case "cancelled":     return `<span class="subtle">Cancelled</span>`;
+      default:              return "—";
+    }
+  }
+
+  function syncRentalStatuses() {
+    const t = Date.now();
+    let changed = false;
+    data.rentals.forEach((r) => {
+      if (r.status === "Reserved" && new Date(r.pickup).getTime() <= t) {
+        r.status = "Active";
+        r.updatedAt = nowISO();
+        changed = true;
+      }
+    });
+    return changed;
+  }
+
+  function vehicleStatus(v) {
+    if (!v.active) return "Inactive";
+    const rs = data.rentals.filter((r) => r.vehicleId === v.id && (r.status === "Active" || r.status === "Reserved"));
+    if (rs.some((r) => r.status === "Active")) return "Rented";
+    if (rs.length) return "Reserved";
+    return "Available";
+  }
+
+  function isOverdue(r) {
+    return r.status === "Active" && new Date(r.return).getTime() < Date.now();
+  }
+
+  function rentalEffectiveEnd(r) {
+    if (r.status === "Completed" && r.actualReturnAt) return r.actualReturnAt;
+    return r.return;
+  }
+
+  function findConflict(vehicleId, pickupISO, returnISO, excludeRentalId) {
+    const a1 = new Date(pickupISO).getTime();
+    const a2 = new Date(returnISO).getTime();
+    if (!Number.isFinite(a1) || !Number.isFinite(a2)) return null;
+    return data.rentals.find((r) => {
+      if (r.id === excludeRentalId) return false;
+      if (r.vehicleId !== vehicleId) return false;
+      if (r.status === "Cancelled") return false;
+      const b1 = new Date(r.pickup).getTime();
+      const b2 = new Date(rentalEffectiveEnd(r)).getTime();
+      return a1 < b2 && a2 > b1;
+    }) || null;
+  }
+
+  function licenceExpired(c) {
+    if (!c || !c.licenceExpiry) return false;
+    const d = parseDateOnly(c.licenceExpiry);
+    if (!d) return false;
+    const today = new Date();
+    return d < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  }
+
+  /* ================================================================== *
+   * UI helpers
+   * ================================================================== */
+  function toast(message, type = "") {
+    const node = el("toast");
+    node.textContent = message;
+    node.className = "toast show " + type;
+    clearTimeout(node._timer);
+    node._timer = setTimeout(() => { node.className = "toast"; }, 3800);
+  }
+
+  function chipClass(status) {
+    const k = String(status || "").toLowerCase();
+    if (k === "available" || k === "paid" || k === "completed") return "c-green";
+    if (k === "rented" || k === "active" || k === "partial") return "c-blue";
+    if (k === "reserved" || k === "pending") return "c-amber";
+    if (k === "overdue") return "c-red";
+    if (k === "refund" || k === "adjustment") return "c-violet";
+    return "c-grey";
+  }
+  const chip = (s) => `<span class="chip ${chipClass(s)}">${esc(s)}</span>`;
+
+  function emptyBox(title, action = "") {
+    return `<div class="empty"><strong>${esc(title)}</strong>${action}</div>`;
+  }
+
+  const getGlobal = () => (el("globalSearch") ? el("globalSearch").value.trim().toLowerCase() : "");
+
+  function matchesSearch(global, local, haystack) {
+    const h = String(haystack || "").toLowerCase();
+    if (local && !h.includes(String(local).trim().toLowerCase())) return false;
+    if (global && !h.includes(global)) return false;
+    return true;
+  }
+
+  function guardDateRange(startId, endId, errorId) {
+    const s = val(startId), e = val(endId);
+    if (s && e && e < s) {
+      if (errorId) el(errorId).textContent = "The end date cannot be earlier than the start date.";
+      return false;
+    }
+    if (errorId) el(errorId).textContent = "";
+    return true;
+  }
+
+  /* ================================================================== *
+   * View switching
+   * ================================================================== */
+  const VIEW_TITLES = {
+    dashboard: "Dashboard", vehicles: "Vehicles", customers: "Customers",
+    rentals: "Rentals", payments: "Payments", calendar: "Calendar",
+    history: "Rental History", reports: "Reports", backup: "Backup & Restore"
+  };
+
+  function showView(v) {
+    activeView = v;
+    document.querySelectorAll(".view").forEach((x) => x.classList.toggle("active", x.id === v));
+    document.querySelectorAll(".nav button").forEach((x) => x.classList.toggle("active", x.dataset.view === v));
+    el("moduleTitle").textContent = VIEW_TITLES[v] || "RentalTrack";
+    renderActive();
+  }
+
+  function renderActive() {
+    const changed = syncRentalStatuses();
+    if (changed) save();
+
+    switch (activeView) {
+      case "dashboard": renderDashboard(); break;
+      case "vehicles": renderVehicles(); break;
+      case "customers": renderCustomers(); break;
+      case "rentals": renderRentals(); break;
+      case "payments": renderPayments(); break;
+      case "calendar": renderCalendar(); break;
+      case "history": renderHistory(); break;
+      case "reports": renderReports(); break;
+      case "backup": renderSettings(); break;
+      default: break;
+    }
+  }
+
+  function renderAll() {
+    renderDashboard();
+    renderVehicles();
+    renderCustomers();
+    renderRentals();
+    renderPayments();
+    renderCalendar();
+    renderHistory();
+    renderReports();
+    renderSettings();
+  }
+
+  /* ================================================================== *
+   * Dashboard
+   * ================================================================== */
+  function renderDashboard() {
+    const today = localDateStr();
+    const month = today.slice(0, 7);
+    const live = data.rentals.filter((r) => r.status !== "Cancelled");
+
+    const activeCount = data.rentals.filter((r) => r.status === "Active").length;
+    const reservedCount = data.rentals.filter((r) => r.status === "Reserved").length;
+    const todaysPickups = live.filter((r) => isoDatePart(r.pickup) === today).length;
+    const todaysReturns = live.filter((r) => isoDatePart(r.return) === today && r.status !== "Completed").length;
+    const overdueCount = data.rentals.filter(isOverdue).length;
+
+    let outstandingOpen = 0;   // still in progress
+    let customerOwes = 0;      // completed rentals with unpaid balance
+    let refundsToIssue = 0;    // completed rentals holding deposit
+    let depositsHeld = 0;
+
+    live.forEach((r) => {
+      const m = rentalMoney(r);
+      depositsHeld += m.depositHeld;
+      if (r.status === "Completed") {
+        if (m.rentalBalance > 0) customerOwes += m.rentalBalance;
+        if (m.depositHeld > 0) refundsToIssue += m.depositHeld;
+      } else {
+        if (m.rentalBalance > 0) outstandingOpen += m.rentalBalance;
+      }
+    });
+
+    /* Cash-movement metrics for the month — adjustments are not cash. */
+    let collectedThisMonth = 0, refundedThisMonth = 0;
+    data.payments.forEach((p) => {
+      if (isoDatePart(p.date).slice(0, 7) !== month) return;
+      if (p.kind === "refund") refundedThisMonth += p.amount;
+      else if (p.kind === "adjustment") return;
+      else collectedThisMonth += p.amount;
+    });
+
+    const metrics = [
+      ["Total vehicles", data.vehicles.length, "Fleet size", "accent"],
+      ["Available vehicles", data.vehicles.filter((v) => vehicleStatus(v) === "Available").length, "Ready to rent", "green"],
+      ["Currently rented", activeCount, "Active hires", "blue"],
+      ["Reserved", reservedCount, "Future bookings", "amber"],
+      ["Today's pickups", todaysPickups, "Excludes cancelled", "accent"],
+      ["Today's returns", todaysReturns, "Excludes cancelled", "blue"],
+      ["Overdue returns", overdueCount, "Past their return time", "rose"],
+      ["Open rental balance", money(round2(outstandingOpen)), "Still running — not yet settled", "amber"],
+      ["Customer owes you", money(round2(customerOwes)), "After return — needs collection", "rose"],
+      ["Refunds to issue", money(round2(refundsToIssue)), "Deposits still held on completed rentals", "green"]
+    ];
+
+    el("dashboardMetrics").innerHTML = metrics.map((x, i) =>
+      `<div class="metric metric-${x[3]}" style="animation-delay:${i * 35}ms">
+        <div class="k">${esc(x[0])}</div>
+        <div class="v">${esc(x[1])}</div>
+        <div class="note">${esc(x[2])}</div>
+      </div>`).join("");
+
+    const recent = data.rentals.slice()
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 5);
+
+    el("recentRentals").innerHTML = recent.length
+      ? `<div class="table-wrap"><table class="data-table"><thead><tr>
+           <th>Customer</th><th>Vehicle</th><th>Status</th><th></th>
+         </tr></thead><tbody>${recent.map((r) => `<tr>
+           <td>${esc(customer(r.customerId)?.name || "Deleted customer")}</td>
+           <td>${esc(vehicle(r.vehicleId)?.name || "Deleted vehicle")}</td>
+           <td>${chip(r.status)} ${isOverdue(r) ? chip("Overdue") : ""}<br>${settlementLabel(settlementInfo(r))}</td>
+           <td><button class="btn btn-small btn-secondary" onclick="viewRental('${r.id}')">View</button></td>
+         </tr>`).join("")}</tbody></table></div>`
+      : emptyBox("No rentals yet", `<button class="btn btn-primary" onclick="openRentalModal()">Create first rental</button>`);
+
+    const netCollected = round2(collectedThisMonth - refundedThisMonth);
+    el("dashboardRevenue").innerHTML =
+      `Collected this month: <b>${money(netCollected)}</b><br>` +
+      `Refunds this month: <b>${money(refundedThisMonth)}</b><br>` +
+      `Open rental balance: <b>${money(round2(outstandingOpen))}</b><br>` +
+      `Customer owes you (post-return): <b>${money(round2(customerOwes))}</b><br>` +
+      `Refunds to issue: <b>${money(round2(refundsToIssue))}</b><br>` +
+      `Security deposits held: <b>${money(round2(depositsHeld))}</b>`;
+  }
+
+  /* ================================================================== *
+   * Vehicles
+   * ================================================================== */
+  function renderVehicles() {
+    const global = getGlobal();
+    const local = val("vehicleSearch");
+    const filter = val("vehicleFilter");
+
+    const rows = data.vehicles
+      .map((v) => ({ v, status: vehicleStatus(v) }))
+      .filter(({ v, status }) =>
+        matchesSearch(global, local, [v.name, v.registration, v.model, v.type].join(" ")) &&
+        (!filter || status === filter))
+      .sort((a, b) => a.v.name.localeCompare(b.v.name));
+
+    el("vehiclesBody").innerHTML = rows.length
+      ? rows.map(({ v, status }) => `<tr>
+          <td>
+            <div class="split" style="justify-content:flex-start;gap:10px">
+              ${v.photo ? `<img src="${esc(v.photo)}" alt="" style="width:40px;height:30px;object-fit:cover;border-radius:4px">` : ""}
+              <span><b>${esc(v.name)}</b>${v.demo ? ' <span class="chip c-violet">Demo</span>' : ""}<br>
+              <span class="subtle">${esc(v.registration)}${v.model ? " · " + esc(v.model) : ""}</span></span>
+            </div>
+          </td>
+          <td>${esc(v.type)}</td>
+          <td>${money(v.dailyRate)}</td>
+          <td>${money(v.deposit)}</td>
+          <td>${Number(v.currentKm || 0).toLocaleString("en-IN")}</td>
+          <td>${chip(status)}</td>
+          <td><div class="actions">
+            <button class="btn btn-small btn-secondary" onclick="viewVehicle('${v.id}')">View</button>
+            <button class="btn btn-small btn-secondary" onclick="openVehicleModal('${v.id}')">Edit</button>
+            <button class="btn btn-small btn-secondary" onclick="toggleVehicle('${v.id}')">${v.active ? "Deactivate" : "Activate"}</button>
+            <button class="btn btn-small btn-danger" onclick="deleteVehicle('${v.id}')">Delete</button>
+          </div></td>
+        </tr>`).join("")
+      : `<tr><td colspan="7">${emptyBox("No vehicles found", `<button class="btn btn-primary" onclick="openVehicleModal()">Add vehicle</button>`)}</td></tr>`;
+  }
+
+  /* ================================================================== *
+   * Customers — now with explicit who-owes-what columns
+   * ================================================================== */
+  function renderCustomers() {
+    const global = getGlobal();
+    const local = val("customerSearch");
+
+    const rows = data.customers
+      .filter((c) => matchesSearch(global, local, [c.name, c.phone, c.licence].join(" ")))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    el("customersBody").innerHTML = rows.length
+      ? rows.map((c) => {
+          const rs = data.rentals.filter((r) => r.customerId === c.id && r.status !== "Cancelled");
+          let owes = 0, refunds = 0;
+          rs.forEach((r) => {
+            const info = settlementInfo(r);
+            if (info.direction === "customer-owes" || info.direction === "open") owes += info.amount;
+            if (info.direction === "refund-due") refunds += info.amount;
+          });
+          const expired = licenceExpired(c);
+          return `<tr>
+            <td><b>${esc(c.name)}</b>${c.demo ? ' <span class="chip c-violet">Demo</span>' : ""}${c.archived ? " " + chip("Inactive") : ""}</td>
+            <td>${esc(c.phone)}</td>
+            <td>${esc(c.licence || "—")}${expired ? " " + chip("Overdue") : ""}</td>
+            <td>${rs.length}</td>
+            <td>${owes > 0 ? `<span class="set-due">${money(round2(owes))}</span>` : `<span class="subtle">—</span>`}</td>
+            <td>${refunds > 0 ? `<span class="set-refund">${money(round2(refunds))}</span>` : `<span class="subtle">—</span>`}</td>
+            <td><div class="actions">
+              <button class="btn btn-small btn-secondary" onclick="viewCustomer('${c.id}')">View</button>
+              <button class="btn btn-small btn-secondary" onclick="openCustomerModal('${c.id}')">Edit</button>
+              <button class="btn btn-small btn-secondary" onclick="toggleCustomer('${c.id}')">${c.archived ? "Activate" : "Archive"}</button>
+              <button class="btn btn-small btn-danger" onclick="deleteCustomer('${c.id}')">Delete</button>
+            </div></td>
+          </tr>`;
+        }).join("")
+      : `<tr><td colspan="7">${emptyBox("No customers found", `<button class="btn btn-primary" onclick="openCustomerModal()">Add customer</button>`)}</td></tr>`;
+  }
+
+  /* ================================================================== *
+   * Rentals — Balance column now shows direction
+   * ================================================================== */
+  function rentalSearchText(r) {
+    return [
+      customer(r.customerId)?.name, customer(r.customerId)?.phone,
+      vehicle(r.vehicleId)?.name, vehicle(r.vehicleId)?.registration
+    ].join(" ");
+  }
+
+  function renderRentals() {
+    const global = getGlobal();
+    const local = val("rentalSearch");
+    const statusFilter = val("rentalStatusFilter");
+    const payFilter = val("rentalPayFilter");
+
+    const rows = data.rentals.slice()
+      .filter((r) => {
+        if (statusFilter && r.status !== statusFilter) return false;
+        const m = rentalMoney(r);
+        if (payFilter && m.paymentStatus !== payFilter) return false;
+        return matchesSearch(global, local, rentalSearchText(r));
+      })
+      .sort((a, b) => new Date(b.pickup) - new Date(a.pickup));
+
+    el("rentalsBody").innerHTML = rows.length
+      ? rows.map((r) => {
+          const info = settlementInfo(r);
+          const m = info.m;
+          const c = customer(r.customerId);
+          const v = vehicle(r.vehicleId);
+          const canReturn = r.status === "Active";
+          const canCancel = r.status === "Reserved" || r.status === "Active";
+          const canSettle = r.status !== "Cancelled" && (info.direction === "customer-owes" || info.direction === "refund-due" || info.direction === "open");
+          const settleBtnLabel = info.direction === "customer-owes" ? "Collect" : (info.direction === "refund-due" ? "Refund" : "Payment");
+          return `<tr>
+            <td><b>${esc(c?.name || "Deleted customer")}</b><br><span class="subtle">${esc(c?.phone || "")}</span></td>
+            <td>${esc(v?.name || "Deleted vehicle")}<br>
+              <span class="subtle">${fmtDateTime(r.pickup)} → ${fmtDateTime(r.return)}</span>
+              ${isOverdue(r) ? "<br>" + chip("Overdue") : ""}</td>
+            <td>${money(m.charge)}<br><span class="subtle">${m.days} day(s)</span></td>
+            <td>${money(m.rentalPaid)}</td>
+            <td>${settlementLabel(info)}</td>
+            <td>${money(m.depositHeld)}${m.depositOutstanding > 0 ? `<br><span class="subtle">due ${money(m.depositOutstanding)}</span>` : ""}</td>
+            <td>${chip(r.status)}<br>${chip(m.paymentStatus)}</td>
+            <td><div class="actions">
+              <button class="btn btn-small btn-secondary" onclick="viewRental('${r.id}')">View</button>
+              ${canSettle ? `<button class="btn btn-small btn-secondary" onclick="openPaymentModal('${r.id}')">${settleBtnLabel}</button>` : ""}
+              ${canReturn ? `<button class="btn btn-small btn-primary" onclick="openReturnModal('${r.id}')">Return</button>` : ""}
+              ${canCancel ? `<button class="btn btn-small btn-danger" onclick="openCancelModal('${r.id}')">Cancel</button>` : ""}
+            </div></td>
+          </tr>`;
+        }).join("")
+      : `<tr><td colspan="8">${emptyBox("No rentals match this view", `<button class="btn btn-primary" onclick="openRentalModal()">Create rental</button>`)}</td></tr>`;
+  }
+
+  /* ================================================================== *
+   * Payments — Direction column now explicit
+   * ================================================================== */
+  function paymentDirectionLabel(p) {
+    if (p.kind === "refund") return `<span class="dir-out">↑ Refund to customer</span>`;
+    if (p.kind === "adjustment") return `<span class="dir-move">↔ Deposit applied to rent</span>`;
+    return `<span class="dir-in">↓ Received from customer</span>`;
+  }
+
+  function renderPayments() {
+    const global = getGlobal();
+    const local = val("paymentSearch");
+    const kind = val("paymentKindFilter");
+    const from = val("paymentFrom");
+    const to = val("paymentTo");
+
+    const rangeOk = guardDateRange("paymentFrom", "paymentTo", null);
+
+    const rows = data.payments.slice()
+      .filter((p) => {
+        if (!rangeOk) return false;
+        if (kind && p.kind !== kind) return false;
+        const d = isoDatePart(p.date);
+        if (from && d < from) return false;
+        if (to && d > to) return false;
+        const r = rental(p.rentalId);
+        const hay = [
+          customer(r?.customerId)?.name, vehicle(r?.vehicleId)?.name,
+          p.method, p.note, p.kind
+        ].join(" ");
+        return matchesSearch(global, local, hay);
+      })
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    el("paymentsBody").innerHTML = rows.length
+      ? rows.map((p) => {
+          const r = rental(p.rentalId);
+          const c = customer(r?.customerId);
+          const v = vehicle(r?.vehicleId);
+          const isAdjust = p.kind === "adjustment";
+          const amountCell = isAdjust
+            ? `<span class="subtle">Internal — no cash movement</span>`
+            : `${p.kind === "refund" ? "−" : "+"}${money(p.amount)}`;
+          return `<tr>
+            <td>${fmtDateTime(p.date)}</td>
+            <td>${esc(p.rentalId.slice(-6).toUpperCase())}${r ? `<br><span class="subtle">${esc(r.status)}</span>` : ""}</td>
+            <td><b>${esc(c?.name || "—")}</b><br><span class="subtle">${esc(v?.name || "—")}</span></td>
+            <td>${paymentDirectionLabel(p)}</td>
+            <td>${amountCell}</td>
+            <td>${money(p.rentalPortion)}</td>
+            <td>${money(p.depositPortion)}</td>
+            <td>${esc(p.method)}</td>
+            <td>${esc(p.note || "—")}</td>
+            <td><button class="btn btn-small btn-danger" onclick="deletePayment('${p.id}')">Delete</button></td>
+          </tr>`;
+        }).join("")
+      : `<tr><td colspan="10">${emptyBox("No payment records match this view", `<button class="btn btn-primary" onclick="openPaymentModal('')">Record payment</button>`)}</td></tr>`;
+
+    let collected = 0, refunded = 0, applied = 0;
+    rows.forEach((p) => {
+      if (p.kind === "refund") refunded += p.amount;
+      else if (p.kind === "adjustment") applied += p.amount;
+      else collected += p.amount;
+    });
+    el("paymentsTotals").textContent =
+      `Showing ${rows.length} record(s) · ↓ Received ${money(round2(collected))} · ` +
+      `↑ Refunded ${money(round2(refunded))} · ↔ Deposit applied ${money(round2(applied))} · ` +
+      `Net cash ${money(round2(collected - refunded))}`;
+  }
+
+  /* ================================================================== *
+   * Calendar
+   * ================================================================== */
+  function renderCalendar() {
+    const y = calendarCursor.getFullYear();
+    const m = calendarCursor.getMonth();
+    const first = new Date(y, m, 1);
+    const dayCount = new Date(y, m + 1, 0).getDate();
+    const global = getGlobal();
+    const todayStr = localDateStr();
+
+    el("calendarMonth").textContent = first.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+
+    const list = data.rentals
+      .filter((r) => r.status !== "Cancelled")
+      .filter((r) => !global || rentalSearchText(r).toLowerCase().includes(global));
+
+    let html = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+      .map((x) => `<div class="cal-label">${x}</div>`).join("");
+
+    for (let i = 0; i < first.getDay(); i++) html += `<div class="cal-day"></div>`;
+
+    for (let d = 1; d <= dayCount; d++) {
+      const dayStr = y + "-" + pad2(m + 1) + "-" + pad2(d);
+      const ev = [];
+
+      list.forEach((r) => {
+        const name = vehicle(r.vehicleId)?.name || "Vehicle";
+        const who = customer(r.customerId)?.name || "Customer";
+
+        if (isoDatePart(r.pickup) === dayStr) {
+          const cls = r.status === "Reserved" ? "reserve" : "pick";
+          const label = r.status === "Reserved" ? "Reserved" : "Pickup";
+          ev.push(`<div class="event ${cls}" onclick="viewRental('${r.id}')" title="${esc(who)}">${label} · ${esc(name)}</div>`);
+        }
+
+        if (isoDatePart(r.return) === dayStr) {
+          const late = isOverdue(r);
+          ev.push(`<div class="event ${late ? "late" : "return"}" onclick="viewRental('${r.id}')" title="${esc(who)}">${late ? "OVERDUE" : "Return"} · ${esc(name)}</div>`);
+        }
+      });
+
+      html += `<div class="cal-day ${dayStr === todayStr ? "is-today" : ""}">
+        <div class="cal-num ${dayStr === todayStr ? "is-today" : ""}">${d}</div>${ev.join("")}
+      </div>`;
+    }
+
+    el("calendarGrid").innerHTML = html;
+
+    const monthKey = y + "-" + pad2(m + 1);
+    const monthRentals = list.filter((r) =>
+      isoDatePart(r.pickup).slice(0, 7) === monthKey || isoDatePart(r.return).slice(0, 7) === monthKey);
+
+    el("calendarList").innerHTML = monthRentals.length
+      ? monthRentals
+          .sort((a, b) => new Date(a.pickup) - new Date(b.pickup))
+          .map((r) => `<div class="split" style="padding:9px 0;border-bottom:1px solid #edf1f5">
+              <span><b>${esc(vehicle(r.vehicleId)?.name || "Vehicle")}</b> · ${esc(customer(r.customerId)?.name || "")}
+              ${isOverdue(r) ? " " + chip("Overdue") : ""}<br>
+              <span class="subtle">${fmtDateTime(r.pickup)} → ${fmtDateTime(r.return)}</span></span>
+              <button class="btn btn-small btn-secondary" onclick="viewRental('${r.id}')">View</button>
+            </div>`).join("")
+      : emptyBox("No calendar events in this month");
+  }
+
+  function changeMonth(n) {
+    calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() + n, 1);
+    renderCalendar();
+  }
+
+  /* ================================================================== *
+   * History — Settlement column now explicit
+   * ================================================================== */
+  function renderHistory() {
+    const global = getGlobal();
+    const local = val("historySearch");
+    const start = val("historyStart");
+    const end = val("historyEnd");
+    const pay = val("historyPay");
+    const state = val("historyState");
+
+    const rangeOk = guardDateRange("historyStart", "historyEnd", null);
+
+    const rows = data.rentals.slice()
+      .filter((r) => {
+        if (!rangeOk) return false;
+        const d = isoDatePart(r.pickup);
+        if (start && d < start) return false;
+        if (end && d > end) return false;
+        if (pay && rentalMoney(r).paymentStatus !== pay) return false;
+        if (state && r.status !== state) return false;
+        return matchesSearch(global, local, rentalSearchText(r));
+      })
+      .sort((a, b) => new Date(b.pickup) - new Date(a.pickup));
+
+    el("historyBody").innerHTML = rows.length
+      ? rows.map((r) => {
+          const info = settlementInfo(r);
+          const m = info.m;
+          return `<tr>
+            <td>${fmtDate(r.createdAt)}</td>
+            <td>${esc(customer(r.customerId)?.name || "Deleted customer")}</td>
+            <td>${esc(vehicle(r.vehicleId)?.name || "Deleted vehicle")}</td>
+            <td>${fmtDateTime(r.pickup)} → ${r.actualReturnAt ? fmtDateTime(r.actualReturnAt) : fmtDateTime(r.return)}</td>
+            <td>${money(m.charge)}</td>
+            <td>${money(m.rentalPaid)}</td>
+            <td>${settlementLabel(info)}</td>
+            <td>${chip(r.status)} ${chip(m.paymentStatus)}</td>
+            <td><button class="btn btn-small btn-secondary" onclick="viewRental('${r.id}')">View</button></td>
+          </tr>`;
+        }).join("")
+      : `<tr><td colspan="9">${emptyBox("No rental records match this view")}</td></tr>`;
+  }
+
+  /* ================================================================== *
+   * Reports
+   * ================================================================== */
+  function reportDateChanged() {
+    if (!guardDateRange("reportStart", "reportEnd", "reportError")) {
+      el("reportRange").value = "custom";
+      renderReports();
+      return;
+    }
+    el("reportRange").value = "custom";
+    renderReports();
+  }
+
+  function setReportRange() {
+    const mode = val("reportRange");
+    const t = new Date();
+    let s = "", e = "";
+    if (mode === "today") { s = e = localDateStr(t); }
+    else if (mode === "week") {
+      const start = new Date(t.getFullYear(), t.getMonth(), t.getDate() - t.getDay());
+      s = localDateStr(start); e = localDateStr(t);
+    } else if (mode === "month") {
+      s = localDateStr(new Date(t.getFullYear(), t.getMonth(), 1)); e = localDateStr(t);
+    } else {
+      renderReports();
+      return;
+    }
+    el("reportStart").value = s;
+    el("reportEnd").value = e;
+    el("reportError").textContent = "";
+    renderReports();
+  }
+
+  function renderReports() {
+    const startInput = el("reportStart");
+    if (!startInput) return;
+    if (!startInput.value && !val("reportEnd")) {
+      const t = new Date();
+      startInput.value = localDateStr(new Date(t.getFullYear(), t.getMonth(), 1));
+      el("reportEnd").value = localDateStr(t);
+    }
+
+    const rangeOk = guardDateRange("reportStart", "reportEnd", "reportError");
+    const s = val("reportStart");
+    const e = val("reportEnd");
+
+    const inRange = (iso) => {
+      if (!rangeOk) return false;
+      const d = isoDatePart(iso);
+      if (!d) return false;
+      if (s && d < s) return false;
+      if (e && d > e) return false;
+      return true;
+    };
+
+    const rentals = data.rentals.filter((r) => r.status !== "Cancelled" && inRange(r.pickup));
+
+    let chargesBooked = 0, outstanding = 0, depositsHeld = 0, depositsCollected = 0, depositsApplied = 0;
+    let customerOwes = 0, refundsToIssue = 0;
+    rentals.forEach((r) => {
+      const m = rentalMoney(r);
+      chargesBooked += m.charge;
+      outstanding += m.rentalBalance;
+      depositsHeld += m.depositHeld;
+      depositsCollected += m.depositPaid;
+      depositsApplied += m.depositApplied;
+      if (r.status === "Completed") {
+        if (m.rentalBalance > 0) customerOwes += m.rentalBalance;
+        if (m.depositHeld > 0) refundsToIssue += m.depositHeld;
+      }
+    });
+
+    let collected = 0, refunded = 0;
+    data.payments.forEach((p) => {
+      if (!inRange(p.date)) return;
+      if (p.kind === "refund") refunded += p.amount;
+      else if (p.kind === "adjustment") return;
+      else collected += p.amount;
+    });
+    collected = round2(collected);
+    refunded = round2(refunded);
+
+    const metrics = [
+      ["Rental charges booked", money(round2(chargesBooked)), "Pickups in this period", "accent"],
+      ["Money collected", money(collected), "Cash received in this period", "green"],
+      ["Refunds issued", money(refunded), "Cash paid back in this period", "rose"],
+      ["Net cash movement", money(round2(collected - refunded)), "Collected − refunded", "blue"],
+      ["Open rental balance", money(round2(outstanding)), "Across all rentals in range", "amber"],
+      ["Customer owes you", money(round2(customerOwes)), "Post-return, needs collection", "rose"],
+      ["Refunds to issue", money(round2(refundsToIssue)), "Deposits still held on completed rentals", "green"],
+      ["Security deposits held", money(round2(depositsHeld)), "Refundable, not income", "blue"],
+      ["Security deposits taken", money(round2(depositsCollected)), "Collected in this period", "accent"],
+      ["Deposits applied to rent", money(round2(depositsApplied)), "Internal transfer, not income", "amber"]
+    ];
+
+    el("reportMetrics").innerHTML = metrics.map((x) =>
+      `<div class="metric metric-${x[3]}">
+        <div class="k">${esc(x[0])}</div>
+        <div class="v" style="font-size:20px">${esc(x[1])}</div>
+        <div class="note">${esc(x[2])}</div>
+      </div>`).join("");
+
+    const byDay = {};
+    rentals.forEach((r) => {
+      const k = isoDatePart(r.pickup);
+      byDay[k] = (byDay[k] || 0) + rentalMoney(r).charge;
+    });
+    chart("revenueChart", byDay, (v) => money(v));
+
+    const byVehicle = {};
+    rentals.forEach((r) => {
+      const n = vehicle(r.vehicleId)?.name || "Deleted vehicle";
+      byVehicle[n] = (byVehicle[n] || 0) + 1;
+    });
+    chart("vehicleChart", byVehicle, (v) => v + " rental" + (v === 1 ? "" : "s"));
+
+    el("reportError").textContent = rangeOk
+      ? ""
+      : "The end date cannot be earlier than the start date.";
+  }
+
+  function chart(id, values, fmt) {
+    const target = el(id);
+    const entries = Object.entries(values);
+    if (!entries.length) { target.innerHTML = emptyBox("No report data for this period"); return; }
+    const max = Math.max(...entries.map((x) => x[1])) || 1;
+    target.innerHTML = `<div class="bars">${entries.slice(-12).map(([k, v]) =>
+      `<div class="bar-wrap" title="${esc(k)}: ${esc(fmt(v))}">
+        <div class="bar" style="height:${Math.max(4, (v / max) * 165)}px"></div>
+        <div class="bar-label">${esc(String(k).slice(0, 10))}</div>
+      </div>`).join("")}</div>`;
+  }
+
+  /* ================================================================== *
+   * Settings
+   * ================================================================== */
+  function renderSettings() {
+    if (!el("businessName")) return;
+    el("businessName").value = data.settings.businessName || "RentalTrack";
+    el("currencySymbol").value = data.settings.currency || "₹";
+    el("billingRule").value = data.settings.billingRule || "24h";
+    el("dateFormat").value = data.settings.dateFormat || "en-IN";
+  }
+
+  el("settingsForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (formBusy) return;
+    formBusy = true;
+    try {
+      data.settings.businessName = str(val("businessName"), 80) || "RentalTrack";
+      data.settings.currency = str(val("currencySymbol"), 5) || "₹";
+      data.settings.billingRule = val("billingRule") === "calendar" ? "calendar" : "24h";
+      data.settings.dateFormat = val("dateFormat") === "iso" ? "iso" : "en-IN";
+      afterChange("Settings saved. The billing rule now applies to all calculations.");
+    } finally {
+      setTimeout(() => { formBusy = false; }, 300);
+    }
+  });
+
+  /* ================================================================== *
+   * Modal plumbing
+   * ================================================================== */
+  function openModal(title, body, foot = "", wide = false) {
+    modalReturnFocus = document.activeElement;
+    const box = el("modal");
+    box.className = "modal" + (wide ? " modal-wide" : "");
+    box.innerHTML =
+      `<div class="modal-head"><h2 id="modalTitle">${title}</h2>
+         <button class="close" aria-label="Close dialog" onclick="closeModal()">×</button></div>
+       <div class="modal-body">${body}</div>
+       ${foot ? `<div class="modal-foot">${foot}</div>` : ""}`;
+    box.scrollTop = 0;
+    const back = el("modalBackdrop");
+    back.classList.add("open");
+    back.setAttribute("aria-hidden", "false");
+    setTimeout(() => {
+      const f = box.querySelector("input:not([type=hidden]),select,textarea,button");
+      if (f) f.focus({ preventScroll: true });
+    }, 60);
+  }
+
+  function closeModal() {
+    const back = el("modalBackdrop");
+    back.classList.remove("open");
+    back.setAttribute("aria-hidden", "true");
+    if (modalReturnFocus && document.contains(modalReturnFocus)) {
+      modalReturnFocus.focus({ preventScroll: true });
+    }
+  }
+
+  el("modalBackdrop").addEventListener("click", (e) => { if (e.target === e.currentTarget) closeModal(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+  function submitOnce(handler) {
+    return function (event) {
+      if (event) event.preventDefault();
+      if (formBusy) return;
+      formBusy = true;
+      try { handler(event); }
+      finally { setTimeout(() => { formBusy = false; }, 400); }
+    };
+  }
+
+  function confirmAction(title, text, confirmLabel, action) {
+    openModal(title,
+      `<p>${esc(text)}</p>`,
+      `<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+       <button class="btn btn-danger" id="confirmActionBtn">${esc(confirmLabel)}</button>`);
+    el("confirmActionBtn").addEventListener("click", () => {
+      if (formBusy) return;
+      formBusy = true;
+      try { action(); } finally { setTimeout(() => { formBusy = false; }, 400); }
+    });
+  }
+
+  /* ================================================================== *
+   * Vehicles — modal / actions
+   * ================================================================== */
+  function openVehicleModal(id = "") {
+    const existing = id ? vehicle(id) : null;
+    const v = existing || {
+      type: "Car", name: "", registration: "", model: "", year: "", fuel: "",
+      dailyRate: "", deposit: "", currentKm: 0, active: true, notes: "", photo: ""
+    };
+
+    openModal(
+      existing ? "Edit vehicle" : "Add vehicle",
+      `<form id="vehicleForm" novalidate>
+        <div class="form-grid">
+          <div class="field"><label for="vType">Type</label>
+            <select id="vType" class="select">
+              <option ${v.type === "Car" ? "selected" : ""}>Car</option>
+              <option ${v.type === "Bike" ? "selected" : ""}>Bike</option>
+            </select></div>
+          <div class="field"><label for="vName">Vehicle name *</label>
+            <input id="vName" class="input" maxlength="90" value="${esc(v.name)}"></div>
+          <div class="field"><label for="vReg">Registration number *</label>
+            <input id="vReg" class="input" maxlength="30" value="${esc(v.registration)}"></div>
+          <div class="field"><label for="vModel">Model</label>
+            <input id="vModel" class="input" maxlength="60" value="${esc(v.model)}"></div>
+          <div class="field"><label for="vYear">Year</label>
+            <input id="vYear" type="number" min="1900" max="2100" step="1" class="input" value="${esc(v.year)}"></div>
+          <div class="field"><label for="vFuel">Fuel type</label>
+            <input id="vFuel" class="input" maxlength="30" value="${esc(v.fuel)}"></div>
+          <div class="field"><label for="vRate">Daily rental rate *</label>
+            <input id="vRate" type="number" min="0" step="0.01" class="input" value="${esc(v.dailyRate)}"></div>
+          <div class="field"><label for="vDeposit">Default security deposit</label>
+            <input id="vDeposit" type="number" min="0" step="0.01" class="input" value="${esc(v.deposit)}"></div>
+          <div class="field"><label for="vKm">Current odometer (KM)</label>
+            <input id="vKm" type="number" min="0" step="1" class="input" value="${esc(v.currentKm)}"></div>
+          <div class="field"><label for="vActive">Availability</label>
+            <select id="vActive" class="select">
+              <option value="1" ${v.active ? "selected" : ""}>Active — can be booked</option>
+              <option value="0" ${!v.active ? "selected" : ""}>Inactive — hidden from new bookings</option>
+            </select></div>
+          <div class="field full"><label for="vNotes">Notes</label>
+            <textarea id="vNotes" class="textarea" maxlength="600">${esc(v.notes)}</textarea></div>
+          <div class="field"><label for="vPhoto">Vehicle photo (stored locally)</label>
+            <input id="vPhoto" type="file" accept="image/*" class="input">
+            <button class="btn btn-small btn-secondary" type="button" onclick="removePhoto()">Remove photo</button></div>
+          <div><img id="photoPreview" class="photo-preview" ${v.photo ? `src="${esc(v.photo)}" style="display:block"` : ""} alt="Vehicle preview"></div>
+        </div>
+        <div class="form-error" id="vehicleError"></div>
+      </form>`,
+      `<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+       <button class="btn btn-primary" form="vehicleForm">Save vehicle</button>`
+    );
+
+    const photoInput = el("vPhoto");
+    if (photoInput) photoInput.addEventListener("change", readPhoto);
+
+    el("vehicleForm").addEventListener("submit", submitOnce(() => {
+      const err = el("vehicleError");
+      err.textContent = "";
+
+      const name = str(val("vName"), 90);
+      const reg = str(val("vReg"), 30);
+      const rate = num(val("vRate"));
+      const dep = val("vDeposit").trim() === "" ? 0 : num(val("vDeposit"));
+      const km = val("vKm").trim() === "" ? 0 : num(val("vKm"));
+      const yearRaw = val("vYear").trim();
+      const year = yearRaw === "" ? "" : num(yearRaw);
+
+      if (!name) return (err.textContent = "Vehicle name is required.");
+      if (!reg) return (err.textContent = "Registration number is required.");
+      if (!Number.isFinite(rate) || rate < 0) return (err.textContent = "Enter a valid, non-negative daily rate.");
+      if (!Number.isFinite(dep) || dep < 0) return (err.textContent = "Enter a valid, non-negative deposit.");
+      if (!Number.isFinite(km) || km < 0) return (err.textContent = "Odometer must be a non-negative number.");
+      if (year !== "" && (!Number.isFinite(year) || year < 1900 || year > 2100)) {
+        return (err.textContent = "Year must be between 1900 and 2100.");
+      }
+
+      const duplicate = data.vehicles.some((x) =>
+        x.id !== id && x.registration.toLowerCase() === reg.toLowerCase());
+      if (duplicate) return (err.textContent = "Another vehicle already uses this registration number.");
+
+      const preview = el("photoPreview");
+      const photo = (preview && preview.dataset.photo !== undefined ? preview.dataset.photo : v.photo) || "";
+
+      const record = {
+        ...(existing || {}),
+        id: existing ? existing.id : uid("veh"),
+        type: val("vType") === "Bike" ? "Bike" : "Car",
+        name, registration: reg,
+        model: str(val("vModel"), 60),
+        year: yearRaw === "" ? "" : String(year),
+        fuel: str(val("vFuel"), 30),
+        dailyRate: round2(rate),
+        deposit: round2(dep),
+        currentKm: round2(km),
+        active: val("vActive") === "1",
+        notes: str(val("vNotes"), 600),
+        photo,
+        demo: existing ? existing.demo : false,
+        createdAt: existing ? existing.createdAt : nowISO(),
+        updatedAt: nowISO()
+      };
+
+      if (existing) Object.assign(existing, record);
+      else data.vehicles.push(record);
+
+      closeModal();
+      afterChange("Vehicle saved.");
+    }));
+  }
+
+  function readPhoto(e) {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    if (f.size > MAX_PHOTO_BYTES) { toast("Choose an image under 1.8 MB.", "error"); e.target.value = ""; return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const p = el("photoPreview");
+      if (!p) return;
+      p.src = reader.result;
+      p.dataset.photo = reader.result;
+      p.style.display = "block";
+    };
+    reader.readAsDataURL(f);
+  }
+
+  function removePhoto() {
+    const p = el("photoPreview");
+    if (!p) return;
+    p.src = "";
+    p.dataset.photo = "";
+    p.style.display = "none";
+  }
+
+  function toggleVehicle(id) {
+    const v = vehicle(id);
+    if (!v) return;
+    if (v.active) {
+      const blockers = data.rentals.filter((r) =>
+        r.vehicleId === id && (r.status === "Active" || r.status === "Reserved"));
+      if (blockers.length) {
+        toast("This vehicle has active or reserved rentals. Cancel or complete them first.", "error");
+        return;
+      }
+      confirmAction("Deactivate this vehicle?",
+        "It will be hidden from new bookings. Existing history is kept.",
+        "Deactivate", () => {
+          v.active = false;
+          v.updatedAt = nowISO();
+          closeModal();
+          afterChange("Vehicle deactivated.");
+        });
+    } else {
+      v.active = true;
+      v.updatedAt = nowISO();
+      afterChange("Vehicle activated.");
+    }
+  }
+
+  function deleteVehicle(id) {
+    if (data.rentals.some((r) => r.vehicleId === id)) {
+      toast("Vehicles with rental history cannot be deleted. Deactivate it instead.", "error");
+      return;
+    }
+    confirmAction("Delete vehicle?", "This cannot be undone.", "Delete", () => {
+      data.vehicles = data.vehicles.filter((v) => v.id !== id);
+      closeModal();
+      afterChange("Vehicle deleted.");
+    });
+  }
+
+  /* ================================================================== *
+   * Customers — modal / actions
+   * ================================================================== */
+  function openCustomerModal(id = "") {
+    const existing = id ? customer(id) : null;
+    const c = existing || { name: "", phone: "", address: "", licence: "", licenceExpiry: "", idProof: "", notes: "" };
+
+    openModal(
+      existing ? "Edit customer" : "Add customer",
+      `<form id="customerForm" novalidate>
+        <div class="form-grid">
+          <div class="field"><label for="cName">Name *</label>
+            <input id="cName" class="input" maxlength="90" value="${esc(c.name)}"></div>
+          <div class="field"><label for="cPhone">Phone *</label>
+            <input id="cPhone" class="input" maxlength="30" value="${esc(c.phone)}"></div>
+          <div class="field full"><label for="cAddress">Address</label>
+            <textarea id="cAddress" class="textarea" maxlength="400">${esc(c.address)}</textarea></div>
+          <div class="field"><label for="cLicence">Driving licence number</label>
+            <input id="cLicence" class="input" maxlength="40" value="${esc(c.licence)}"></div>
+          <div class="field"><label for="cExpiry">Licence expiry</label>
+            <input id="cExpiry" type="date" class="input" value="${esc(c.licenceExpiry)}"></div>
+          <div class="field"><label for="cIdProof">ID proof details</label>
+            <input id="cIdProof" class="input" maxlength="120" value="${esc(c.idProof)}"></div>
+          <div class="field full"><label for="cNotes">Notes</label>
+            <textarea id="cNotes" class="textarea" maxlength="600">${esc(c.notes)}</textarea></div>
+        </div>
+        <div class="form-error" id="customerError"></div>
+      </form>`,
+      `<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+       <button class="btn btn-primary" form="customerForm">Save customer</button>`
+    );
+
+    el("customerForm").addEventListener("submit", submitOnce(() => {
+      const err = el("customerError");
+      err.textContent = "";
+
+      const name = str(val("cName"), 90);
+      const phone = str(val("cPhone"), 30);
+      const expiry = val("cExpiry");
+
+      if (!name) return (err.textContent = "Customer name is required.");
+      if (!phone) return (err.textContent = "Phone number is required.");
+      const digits = phone.replace(/\D/g, "");
+      if (digits.length < 7 || digits.length > 15) {
+        return (err.textContent = "Enter a valid phone number (7–15 digits).");
+      }
+      if (expiry && !parseDateOnly(expiry)) return (err.textContent = "Enter a valid licence expiry date.");
+
+      const record = {
+        ...(existing || {}),
+        id: existing ? existing.id : uid("cus"),
+        name, phone,
+        address: str(val("cAddress"), 400),
+        licence: str(val("cLicence"), 40),
+        licenceExpiry: expiry || "",
+        idProof: str(val("cIdProof"), 120),
+        notes: str(val("cNotes"), 600),
+        archived: existing ? existing.archived : false,
+        demo: existing ? existing.demo : false,
+        createdAt: existing ? existing.createdAt : nowISO(),
+        updatedAt: nowISO()
+      };
+
+      if (existing) Object.assign(existing, record);
+      else data.customers.push(record);
+
+      closeModal();
+      afterChange("Customer saved.");
+    }));
+  }
+
+  function toggleCustomer(id) {
+    const c = customer(id);
+    if (!c) return;
+    c.archived = !c.archived;
+    c.updatedAt = nowISO();
+    afterChange(c.archived ? "Customer archived." : "Customer activated.");
+  }
+
+  function deleteCustomer(id) {
+    if (data.rentals.some((r) => r.customerId === id)) {
+      toast("Customers with rental history cannot be deleted. Archive them instead.", "error");
+      return;
+    }
+    confirmAction("Delete customer?", "This cannot be undone.", "Delete", () => {
+      data.customers = data.customers.filter((c) => c.id !== id);
+      closeModal();
+      afterChange("Customer deleted.");
+    });
+  }
+
+  /* ================================================================== *
+   * Rental modal
+   * ================================================================== */
+  function openRentalModal(id = "") {
+    const existing = id ? rental(id) : null;
+
+    const activeCustomers = data.customers.filter((c) => !c.archived || (existing && c.id === existing.customerId));
+    const activeVehicles = data.vehicles.filter((v) => v.active || (existing && v.id === existing.vehicleId));
+
+    if (!activeCustomers.length) { toast("Add at least one active customer first.", "error"); return; }
+    if (!activeVehicles.length) { toast("Add at least one active vehicle first.", "error"); return; }
+
+    const defaultPickup = existing ? existing.pickup : nowISO();
+    const defaultReturn = existing ? existing.return : new Date(Date.now() + DAY_MS).toISOString();
+
+    const base = existing || {
+      customerId: activeCustomers[0].id,
+      vehicleId: activeVehicles[0].id,
+      dailyRate: activeVehicles[0].dailyRate,
+      discount: 0,
+      extraCharge: 0,
+      securityDeposit: activeVehicles[0].deposit || 0,
+      notes: ""
+    };
+
+    const money0 = existing ? rentalMoney(existing) : null;
+
+    const customerOptions = activeCustomers.map((c) => {
+      const expired = licenceExpired(c);
+      return `<option value="${c.id}" ${base.customerId === c.id ? "selected" : ""}>${esc(c.name)} — ${esc(c.phone)}${expired ? " (licence expired)" : ""}</option>`;
+    }).join("");
+
+    const vehicleOptions = activeVehicles.map((v) => {
+      const status = vehicleStatus(v);
+      return `<option value="${v.id}" ${base.vehicleId === v.id ? "selected" : ""}>${esc(v.name)} (${esc(v.registration)}) · ${esc(status)}</option>`;
+    }).join("");
+
+    const initialPaymentBlock = existing ? "" : `
+      <div class="field"><label for="rInitial">Amount received now</label>
+        <input id="rInitial" type="number" min="0" step="0.01" class="input" value="0"></div>
+      <div class="field"><label for="rInitialMethod">Payment method</label>
+        <select id="rInitialMethod" class="select">
+          ${PAYMENT_METHODS.map((m) => `<option>${m}</option>`).join("")}
+        </select></div>`;
+
+    const paymentSummaryBlock = existing ? `
+      <div class="summary-box" style="background:#f6f9ff;border-color:#cddffd">
+        <div><span class="subtle">Rental charge</span><b>${money(money0.charge)}</b></div>
+        <div><span class="subtle">Rental paid</span><b>${money(money0.rentalPaid)}</b></div>
+        <div><span class="subtle">Customer owes</span><b>${money(money0.rentalBalance)}</b></div>
+        <div><span class="subtle">Deposit held</span><b>${money(money0.depositHeld)}</b></div>
+      </div>
+      <div class="info" style="margin-top:12px">
+        Payments are recorded separately and are never rewritten by editing this rental.
+        Use <b>Record payment</b> on the rental to add or refund money.
+      </div>` : "";
+
+    openModal(
+      existing ? "Edit rental" : "New Rental",
+      `<form id="rentalForm" novalidate>
+        <div class="warn">
+          Vehicles with overlapping bookings cannot be selected. Cancelled bookings are ignored when checking conflicts.
+        </div>
+        <div class="form-grid" style="margin-top:15px">
+          <div class="field"><label for="rCustomer">Customer *</label>
+            <select id="rCustomer" class="select">${customerOptions}</select>
+            <button type="button" class="btn btn-small btn-secondary" onclick="openCustomerModal()">Quick add customer</button></div>
+          <div class="field"><label for="rVehicle">Vehicle *</label>
+            <select id="rVehicle" class="select">${vehicleOptions}</select>
+            <button type="button" class="btn btn-small btn-secondary" onclick="openVehicleModal()">Quick add vehicle</button></div>
+          <div class="field"><label for="rPickup">Pickup date &amp; time *</label>
+            <input id="rPickup" type="datetime-local" class="input" value="${toLocalInput(defaultPickup)}"></div>
+          <div class="field"><label for="rReturn">Scheduled return date &amp; time *</label>
+            <input id="rReturn" type="datetime-local" class="input" value="${toLocalInput(defaultReturn)}"></div>
+          <div class="field"><label for="rRate">Daily rate *</label>
+            <input id="rRate" type="number" min="0" step="0.01" class="input" value="${esc(base.dailyRate)}"></div>
+          <div class="field"><label for="rDeposit">Security deposit</label>
+            <input id="rDeposit" type="number" min="0" step="0.01" class="input" value="${esc(base.securityDeposit)}"></div>
+          <div class="field"><label for="rDiscount">Discount on rental charge</label>
+            <input id="rDiscount" type="number" min="0" step="0.01" class="input" value="${esc(base.discount)}"></div>
+          <div class="field"><label for="rExtra">Additional charges (late fee etc.)</label>
+            <input id="rExtra" type="number" min="0" step="0.01" class="input" value="${esc(base.extraCharge)}"></div>
+          ${initialPaymentBlock}
+          <div class="field full"><label for="rNotes">Rental notes</label>
+            <textarea id="rNotes" class="textarea" maxlength="600">${esc(base.notes)}</textarea></div>
+        </div>
+        <div class="summary-box" id="rentalSummary"></div>
+        ${paymentSummaryBlock}
+        <div class="form-error" id="rentalError"></div>
+      </form>`,
+      `<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+       <button class="btn btn-primary" form="rentalForm">Save rental</button>`,
+      true
+    );
+
+    const updateSummary = () => {
+      const summaryEl = el("rentalSummary");
+      if (!summaryEl) return null;
+
+      const pickupISO = fromLocalInput(val("rPickup"));
+      const returnISO = fromLocalInput(val("rReturn"));
+      const rate = num(val("rRate"));
+      const discount = val("rDiscount").trim() === "" ? 0 : num(val("rDiscount"));
+      const extra = val("rExtra").trim() === "" ? 0 : num(val("rExtra"));
+      const deposit = val("rDeposit").trim() === "" ? 0 : num(val("rDeposit"));
+      const initial = el("rInitial") ? (val("rInitial").trim() === "" ? 0 : num(val("rInitial"))) : 0;
+
+      if (!pickupISO || !returnISO) {
+        summaryEl.innerHTML = `<div class="full"><span class="subtle">Enter valid pickup and return date/time.</span></div>`;
+        return null;
+      }
+
+      const days = billableDays(pickupISO, returnISO);
+      const subtotal = round2(days * (Number.isFinite(rate) ? Math.max(0, rate) : 0));
+      const charge = round2(Math.max(0, subtotal - (Number.isFinite(discount) ? Math.max(0, discount) : 0) + (Number.isFinite(extra) ? Math.max(0, extra) : 0)));
+      const depositAmount = Number.isFinite(deposit) ? Math.max(0, deposit) : 0;
+      const totalPayable = round2(charge + depositAmount);
+      const initAmt = Number.isFinite(initial) ? Math.max(0, initial) : 0;
+      const customerOwes = round2(Math.max(0, totalPayable - initAmt));
+
+      summaryEl.innerHTML = `
+        <div><span class="subtle">Billable days</span><b>${days}</b></div>
+        <div><span class="subtle">Rental subtotal</span><b>${money(subtotal)}</b></div>
+        <div><span class="subtle">Rental charge</span><b>${money(charge)}</b></div>
+        <div><span class="subtle">Security deposit</span><b>${money(depositAmount)}</b></div>
+        <div><span class="subtle">Total payable</span><b>${money(totalPayable)}</b></div>
+        ${existing ? "" : `<div><span class="subtle">Received now</span><b>${money(initAmt)}</b></div>`}
+        ${existing ? "" : `<div class="hi-due"><span class="subtle">Customer still owes</span><b>${money(customerOwes)}</b></div>`}
+      `;
+
+      return { pickupISO, returnISO, days, subtotal, charge, depositAmount, totalPayable, rate, discount, extra };
+    };
+
+    ["rPickup", "rReturn", "rRate", "rDeposit", "rDiscount", "rExtra", "rInitial"].forEach((fid) => {
+      const node = el(fid);
+      if (node) node.addEventListener("input", updateSummary);
+    });
+
+    const vehicleSelect = el("rVehicle");
+    vehicleSelect.addEventListener("change", () => {
+      const v = vehicle(vehicleSelect.value);
+      if (v) {
+        if (el("rRate")) el("rRate").value = v.dailyRate;
+        if (el("rDeposit")) el("rDeposit").value = v.deposit || 0;
+      }
+      updateSummary();
+    });
+
+    updateSummary();
+
+    el("rentalForm").addEventListener("submit", submitOnce(() => {
+      const err = el("rentalError");
+      err.textContent = "";
+
+      const calc = updateSummary();
+      if (!calc) return (err.textContent = "Enter valid pickup and return date/time.");
+
+      const { pickupISO, returnISO, charge, depositAmount, totalPayable } = calc;
+
+      if (new Date(returnISO) <= new Date(pickupISO)) {
+        return (err.textContent = "Return date/time must be after pickup date/time.");
+      }
+      if (!Number.isFinite(calc.rate) || calc.rate < 0) return (err.textContent = "Enter a valid daily rate.");
+      if (!Number.isFinite(calc.discount) || calc.discount < 0) return (err.textContent = "Discount cannot be negative.");
+      if (!Number.isFinite(calc.extra) || calc.extra < 0) return (err.textContent = "Additional charges cannot be negative.");
+
+      const cust = customer(val("rCustomer"));
+      const veh = vehicle(val("rVehicle"));
+      if (!cust) return (err.textContent = "Choose a valid customer.");
+      if (!veh) return (err.textContent = "Choose a valid vehicle.");
+      if (cust.archived && (!existing || existing.customerId !== cust.id)) {
+        return (err.textContent = "Archived customers cannot be used for new rentals. Activate the customer first.");
+      }
+      if (!veh.active && (!existing || existing.vehicleId !== veh.id)) {
+        return (err.textContent = "Inactive vehicles cannot be rented.");
+      }
+      if (licenceExpired(cust)) {
+        return (err.textContent = `This customer's driving licence expired on ${fmtDateOnly(cust.licenceExpiry)}. Update the licence before booking.`);
+      }
+
+      const conflict = findConflict(veh.id, pickupISO, returnISO, existing ? existing.id : null);
+      if (conflict) {
+        const cc = customer(conflict.customerId);
+        return (err.textContent =
+          `Booking conflict: ${veh.name} is already booked from ${fmtDateTime(conflict.pickup)} to ${fmtDateTime(conflict.return)}` +
+          (cc ? ` for ${cc.name}.` : "."));
+      }
+
+      let initialPortions = null;
+      if (!existing) {
+        const initialRaw = el("rInitial") ? val("rInitial").trim() : "0";
+        const initial = initialRaw === "" ? 0 : num(initialRaw);
+        if (!Number.isFinite(initial) || initial < 0) {
+          return (err.textContent = "Enter a valid amount received (0 or more).");
+        }
+        if (initial > totalPayable + 0.001) {
+          return (err.textContent = "Amount received cannot exceed the total payable (rental charge + security deposit).");
+        }
+        if (initial > 0) {
+          const rentalPortion = round2(Math.min(initial, charge));
+          const depositPortion = round2(initial - rentalPortion);
+          initialPortions = { rentalPortion, depositPortion, method: val("rInitialMethod") || "Cash" };
+        }
+      }
+
+      const now = nowISO();
+      const record = {
+        ...(existing || {}),
+        id: existing ? existing.id : uid("rent"),
+        customerId: cust.id,
+        vehicleId: veh.id,
+        pickup: pickupISO,
+        return: returnISO,
+        dailyRate: round2(calc.rate),
+        discount: round2(calc.discount),
+        extraCharge: round2(calc.extra),
+        securityDeposit: round2(depositAmount),
+        status: existing ? existing.status : (new Date(pickupISO) > new Date() ? "Reserved" : "Active"),
+        notes: str(val("rNotes"), 600),
+        demo: existing ? existing.demo : false,
+        createdAt: existing ? existing.createdAt : now,
+        updatedAt: now
+      };
+
+      if (existing) {
+        Object.assign(existing, record);
+      } else {
+        data.rentals.push(record);
+      }
+
+      if (initialPortions) {
+        data.payments.push({
+          id: uid("pay"),
+          rentalId: record.id,
+          kind: "payment",
+          amount: round2(initialPortions.rentalPortion + initialPortions.depositPortion),
+          rentalPortion: initialPortions.rentalPortion,
+          depositPortion: initialPortions.depositPortion,
+          method: initialPortions.method,
+          date: now,
+          note: "Initial payment on booking",
+          demo: false,
+          createdAt: now
+        });
+      }
+
+      closeModal();
+      afterChange(existing ? "Rental updated." : "Rental created.");
+    }));
+  }
+
+  /* ================================================================== *
+   * Payment modal
+   * ================================================================== */
+  function openPaymentModal(rentalId = "") {
+    const candidates = data.rentals
+      .filter((r) => r.status !== "Cancelled")
+      .filter((r) => {
+        const m = rentalMoney(r);
+        return m.rentalBalance > 0 || m.depositOutstanding > 0 || m.depositHeld > 0;
+      });
+
+    if (!rentalId) {
+      if (!candidates.length) { toast("No rental currently needs a payment or refund.", "error"); return; }
+      rentalId = candidates[0].id;
+    }
+
+    const r = rental(rentalId);
+    if (!r) { toast("That rental could not be found.", "error"); return; }
+
+    const m = rentalMoney(r);
+    const info = settlementInfo(r);
+
+    const list = candidates.some((x) => x.id === rentalId) ? candidates : [r, ...candidates];
+
+    const picker = `<div class="field full"><label for="payRental">Rental</label>
+      <select class="select" id="payRental" onchange="openPaymentModal(this.value)">
+        ${list.map((x) => {
+          const mx = rentalMoney(x);
+          const inf = settlementInfo(x);
+          const dir = inf.direction === "refund-due" ? "↳ refund due" : (inf.direction === "customer-owes" ? "↳ owes you" : "");
+          return `<option value="${x.id}" ${x.id === rentalId ? "selected" : ""}>
+            ${esc(customer(x.customerId)?.name || "—")} · ${esc(vehicle(x.vehicleId)?.name || "—")} ·
+            balance ${money(mx.rentalBalance)} · deposit ${money(mx.depositHeld)} ${dir}
+          </option>`;
+        }).join("")}
+      </select></div>`;
+
+    /* Default the entry kind based on what the rental actually needs. */
+    const defaultKind = info.direction === "refund-due" && m.rentalBalance <= 0 ? "refund" : "payment";
+
+    openModal(
+      "Record payment or refund",
+      `<form id="paymentForm" novalidate>
+        <div class="form-grid">
+          ${picker}
+          <div class="field"><label for="payKind">Direction of money flow *</label>
+            <select class="select" id="payKind">
+              <option value="payment" ${defaultKind === "payment" ? "selected" : ""}>↓ Received from customer (money in)</option>
+              <option value="refund" ${defaultKind === "refund" ? "selected" : ""}>↑ Refund to customer (money out)</option>
+            </select></div>
+          <div class="field"><label for="payAmount">Amount *</label>
+            <input class="input" id="payAmount" type="number" min="0.01" step="0.01" required>
+            <span class="subtle" id="payAmountHint"></span></div>
+          <div class="field"><label for="payAlloc">Apply to</label>
+            <select class="select" id="payAlloc">
+              <option value="auto">Rental charge first, then deposit</option>
+              <option value="rental">Rental charge only</option>
+              <option value="deposit">Security deposit only</option>
+            </select></div>
+          <div class="field"><label for="payMethod">Method</label>
+            <select class="select" id="payMethod">
+              ${PAYMENT_METHODS.map((x) => `<option>${x}</option>`).join("")}
+            </select></div>
+          <div class="field"><label for="payDate">Date &amp; time</label>
+            <input class="input" id="payDate" type="datetime-local" value="${toLocalInput(nowISO())}"></div>
+          <div class="field full"><label for="payNote">Note</label>
+            <input class="input" id="payNote" maxlength="200"></div>
+        </div>
+        <div class="summary-box" id="paySummary"></div>
+        <div class="form-error" id="payError"></div>
+      </form>`,
+      `<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+       <button class="btn btn-primary" form="paymentForm">Save entry</button>`
+    );
+
+    const dueFor = (kind, alloc) => {
+      if (kind === "refund") {
+        return alloc === "rental" ? m.rentalPaid : m.depositHeld;
+      }
+      if (alloc === "rental") return m.rentalBalance;
+      if (alloc === "deposit") return m.depositOutstanding;
+      return round2(m.rentalBalance + m.depositOutstanding);
+    };
+
+    const refresh = () => {
+      const kind = val("payKind");
+      const alloc = el("payAlloc");
+      const current = alloc.value;
+      if (kind === "refund") {
+        alloc.innerHTML = `<option value="deposit">Security deposit refund</option>
+                           <option value="rental">Rental charge refund</option>`;
+      } else {
+        alloc.innerHTML = `<option value="auto">Rental charge first, then deposit</option>
+                           <option value="rental">Rental charge only</option>
+                           <option value="deposit">Security deposit only</option>`;
+      }
+      alloc.value = current && [...alloc.options].some((o) => o.value === current)
+        ? current
+        : (kind === "refund" ? "deposit" : "auto");
+
+      el("paySummary").innerHTML = `
+        <div><span class="subtle">Rental charge</span><b>${money(m.charge)}</b></div>
+        <div class="hi-due"><span class="subtle">Customer owes (rent)</span><b>${money(m.rentalBalance)}</b></div>
+        <div><span class="subtle">Deposit still due</span><b>${money(m.depositOutstanding)}</b></div>
+        <div class="hi-refund"><span class="subtle">Refund due (deposit held)</span><b>${money(m.depositHeld)}</b></div>
+      `;
+
+      const due = round2(Math.max(0, dueFor(kind, alloc.value)));
+      el("payAmount").value = due > 0 ? due : "";
+      el("payAmountHint").textContent = due > 0
+        ? `Auto-filled: ${money(due)} ${kind === "refund" ? "available to refund" : "still due"}. You can edit this.`
+        : "Nothing is due or refundable for this selection.";
+    };
+
+    el("payKind").addEventListener("change", refresh);
+    el("payAlloc").addEventListener("change", refresh);
+    refresh();
+
+    el("paymentForm").addEventListener("submit", submitOnce(() => {
+      const err = el("payError");
+      err.textContent = "";
+
+      const kind = val("payKind") === "refund" ? "refund" : "payment";
+      const amount = num(val("payAmount"));
+      const alloc = val("payAlloc");
+      const dateISO = fromLocalInput(val("payDate"));
+
+      if (!Number.isFinite(amount) || amount <= 0) {
+        return (err.textContent = "Enter a valid amount greater than zero.");
+      }
+      if (!dateISO) return (err.textContent = "Enter a valid date and time.");
+
+      let rentalPortion = 0, depositPortion = 0;
+
+      if (kind === "payment") {
+        const maxAllowed = alloc === "rental" ? m.rentalBalance
+          : alloc === "deposit" ? m.depositOutstanding
+          : round2(m.rentalBalance + m.depositOutstanding);
+
+        if (maxAllowed <= 0) return (err.textContent = "There is nothing left to pay on this rental.");
+        if (amount > maxAllowed + 0.001) {
+          return (err.textContent = `Amount cannot exceed ${money(maxAllowed)} for this selection.`);
+        }
+
+        if (alloc === "rental") { rentalPortion = amount; depositPortion = 0; }
+        else if (alloc === "deposit") { rentalPortion = 0; depositPortion = amount; }
+        else {
+          rentalPortion = round2(Math.min(amount, m.rentalBalance));
+          depositPortion = round2(amount - rentalPortion);
+        }
+      } else {
+        const maxRefund = alloc === "deposit" ? m.depositHeld : m.rentalPaid;
+        if (maxRefund <= 0) return (err.textContent = "There is nothing available to refund for this selection.");
+        if (amount > maxRefund + 0.001) {
+          return (err.textContent = `Refund cannot exceed ${money(maxRefund)} for this selection.`);
+        }
+        if (alloc === "deposit") { depositPortion = amount; rentalPortion = 0; }
+        else { rentalPortion = amount; depositPortion = 0; }
+      }
+
+      data.payments.push({
+        id: uid("pay"),
+        rentalId: r.id,
+        kind,
+        amount: round2(amount),
+        rentalPortion: round2(rentalPortion),
+        depositPortion: round2(depositPortion),
+        method: val("payMethod") || "Cash",
+        date: dateISO,
+        note: str(val("payNote"), 200),
+        demo: false,
+        createdAt: nowISO()
+      });
+
+      closeModal();
+      afterChange(kind === "refund" ? "Refund recorded." : "Payment recorded.");
+    }));
+  }
+
+  function deletePayment(id) {
+    const p = data.payments.find((x) => x.id === id);
+    if (!p) return;
+    const isAdjust = p.kind === "adjustment";
+    confirmAction(
+      isAdjust ? "Delete this deposit application?" : "Delete this payment record?",
+      isAdjust
+        ? "The security deposit will be restored and the rental balance recalculated. No cash movement is affected. This cannot be undone."
+        : "Balances for the linked rental will be recalculated immediately. This cannot be undone.",
+      "Delete record", () => {
+        data.payments = data.payments.filter((x) => x.id !== id);
+        closeModal();
+        afterChange(isAdjust ? "Deposit application removed." : "Payment record deleted.");
+      });
+  }
+
+  /* ================================================================== *
+   * Return modal — automatic settlement
+   * ================================================================== */
+  function openReturnModal(id) {
+    const r = rental(id);
+    if (!r) return;
+    if (r.status !== "Active") { toast("Only active rentals can be returned.", "error"); return; }
+
+    const v = vehicle(r.vehicleId);
+    const c = customer(r.customerId);
+
+    const actualNow = nowISO();
+    const preview = settlementFor(r, {
+      actualReturnISO: actualNow,
+      extraCharge: toNum(r.extraCharge, 0),
+      deduction: 0
+    });
+    const extraDefault = round2(toNum(r.extraCharge, 0) + preview.suggestedLateFee);
+
+    openModal(
+      "Complete rental return",
+      `<form id="returnForm" novalidate>
+        <div class="warn">
+          Returning <b>${esc(v?.name || "vehicle")}</b> for
+          <b>${esc(c?.name || "customer")}</b>.
+          Scheduled return was <b>${fmtDateTime(r.return)}</b>.
+        </div>
+        <div class="form-grid" style="margin-top:15px">
+          <div class="field"><label for="retAt">Actual return date &amp; time *</label>
+            <input class="input" id="retAt" type="datetime-local" value="${toLocalInput(actualNow)}"></div>
+          <div class="field"><label for="retKm">Ending odometer (KM)</label>
+            <input class="input" id="retKm" type="number" min="0" step="1" value="${v ? Math.round(v.currentKm) : 0}"></div>
+          <div class="field"><label for="retExtra">Additional charges (late fee, damage, fuel…)</label>
+            <input class="input" id="retExtra" type="number" min="0" step="0.01" value="${extraDefault}">
+            <span class="subtle" id="retExtraHint"></span></div>
+          <div class="field"><label for="retDeduct">Amount deducted from security deposit</label>
+            <input class="input" id="retDeduct" type="number" min="0" step="0.01" value="0">
+            <span class="subtle" id="retDeductHint"></span></div>
+          <div class="field full"><label for="retNotes">Return notes</label>
+            <textarea class="textarea" id="retNotes" maxlength="500"></textarea></div>
+        </div>
+        <div class="summary-box" id="returnSummary"></div>
+        <div class="info" id="returnSettlementNote" style="margin-top:12px"></div>
+        <div class="form-error" id="returnError"></div>
+      </form>`,
+      `<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+       <button class="btn btn-primary" form="returnForm">Confirm settlement &amp; mark returned</button>`
+    );
+
+    const refreshReturn = () => {
+      const atISO = fromLocalInput(val("retAt")) || r.return;
+      const extraRaw = val("retExtra").trim();
+      const extraVal = extraRaw === "" ? 0 : num(extraRaw);
+      const deductRaw = val("retDeduct").trim();
+      const deductVal = deductRaw === "" ? 0 : num(deductRaw);
+
+      const s = settlementFor(r, {
+        actualReturnISO: atISO,
+        extraCharge: Number.isFinite(extraVal) ? extraVal : 0,
+        deduction: Number.isFinite(deductVal) ? deductVal : 0
+      });
+
+      const err = el("returnError");
+      err.textContent = "";
+      if (extraRaw !== "" && !Number.isFinite(extraVal)) {
+        err.textContent = "Additional charges must be a valid, non-negative number.";
+      } else if (extraVal < 0) {
+        err.textContent = "Additional charges cannot be negative.";
+      } else if (deductRaw !== "" && !Number.isFinite(deductVal)) {
+        err.textContent = "Deposit deduction must be a valid, non-negative number.";
+      } else if (deductVal < 0) {
+        err.textContent = "Deposit deduction cannot be negative.";
+      } else if (s.requestedDeduction > s.maxDeduction + 0.001) {
+        err.textContent = `Deposit deduction was capped at ${money(s.maxDeduction)} — the amount cannot exceed the deposit held or the outstanding rent.`;
+      }
+
+      el("retExtraHint").textContent = s.lateDays > 0
+        ? `Vehicle is ${s.lateDays} day(s) past its scheduled return. A suggested late fee of ${money(s.suggestedLateFee)} is already included — edit if needed.`
+        : "";
+      el("retDeductHint").textContent = s.maxDeduction > 0
+        ? `Maximum deductible: ${money(s.maxDeduction)} (deposit held or outstanding rent, whichever is lower).`
+        : "Nothing can be deducted — there is no outstanding rent, or no deposit held.";
+
+      el("returnSummary").innerHTML = `
+        <div><span class="subtle">Billable days</span><b>${s.baseDays}</b></div>
+        <div><span class="subtle">Rental subtotal</span><b>${money(s.subtotal)}</b></div>
+        <div><span class="subtle">Discount</span><b>− ${money(s.discount)}</b></div>
+        <div><span class="subtle">Additional charges</span><b>${money(s.extra)}</b></div>
+        <div><span class="subtle">Total rental charge</span><b>${money(s.charge)}</b></div>
+        <div><span class="subtle">Amount already paid</span><b>${money(s.rentalPaid)}</b></div>
+        <div><span class="subtle">Outstanding rent</span><b>${money(s.outstandingRent)}</b></div>
+        <div><span class="subtle">Security deposit held</span><b>${money(s.depositHeld)}</b></div>
+        <div><span class="subtle">Deducted from deposit</span><b>${money(s.deduction)}</b></div>
+        <div class="hi-refund"><span class="subtle">Refund payable to customer</span><b>${money(s.depositRefund)}</b></div>
+        <div class="hi-due"><span class="subtle">Additional payment required</span><b>${money(s.additionalPayment)}</b></div>
+      `;
+
+      const notes = [];
+      if (s.deduction > 0) {
+        notes.push(`${money(s.deduction)} will be applied from the security deposit to cover unpaid rent. This is an internal transfer and is <b>not</b> counted as new income.`);
+      }
+      if (s.depositRefund > 0) {
+        notes.push(`${money(s.depositRefund)} will be recorded as a security deposit refund (once).`);
+      }
+      if (s.additionalPayment > 0) {
+        notes.push(`${money(s.additionalPayment)} remains payable by the customer — record it later from the rental's <b>Payment</b> button.`);
+      }
+      el("returnSettlementNote").innerHTML = notes.length
+        ? notes.join("<br>")
+        : "Nothing further is owed either way — the deposit and the rent are fully settled.";
+    };
+
+    ["retAt", "retExtra", "retDeduct"].forEach((fid) => {
+      const node = el(fid);
+      if (node) node.addEventListener("input", refreshReturn);
+    });
+    refreshReturn();
+
+    el("returnForm").addEventListener("submit", submitOnce(() => {
+      const err = el("returnError");
+      err.textContent = "";
+
+      const atISO = fromLocalInput(val("retAt"));
+      if (!atISO) return (err.textContent = "Enter a valid return date and time.");
+      if (new Date(atISO) < new Date(r.pickup)) {
+        return (err.textContent = "The return date/time cannot be before the pickup date/time.");
+      }
+
+      const kmRaw = val("retKm").trim();
+      const km = kmRaw === "" ? null : num(kmRaw);
+      if (km !== null && (!Number.isFinite(km) || km < 0)) {
+        return (err.textContent = "Ending odometer must be a non-negative number.");
+      }
+      if (km !== null && v && km < v.currentKm) {
+        return (err.textContent = `Ending odometer cannot be less than the current reading (${Number(v.currentKm).toLocaleString("en-IN")} KM).`);
+      }
+
+      const extraRaw = val("retExtra").trim();
+      const extra = extraRaw === "" ? 0 : num(extraRaw);
+      if (!Number.isFinite(extra) || extra < 0) {
+        return (err.textContent = "Additional charges must be a non-negative number.");
+      }
+
+      const deductRaw = val("retDeduct").trim();
+      const deductInput = deductRaw === "" ? 0 : num(deductRaw);
+      if (!Number.isFinite(deductInput) || deductInput < 0) {
+        return (err.textContent = "Deposit deduction must be a non-negative number.");
+      }
+
+      const s = settlementFor(r, { actualReturnISO: atISO, extraCharge: extra, deduction: deductInput });
+
+      if (s.requestedDeduction > s.maxDeduction + 0.001) {
+        return (err.textContent = `Deposit deduction cannot exceed ${money(s.maxDeduction)}.`);
+      }
+
+      const stamp = nowISO();
+
+      r.extraCharge = round2(s.extra);
+      r.status = "Completed";
+      r.actualReturnAt = atISO;
+      r.endingKm = km;
+      r.returnNotes = str(val("retNotes"), 500);
+      r.updatedAt = stamp;
+
+      if (v && km !== null) {
+        v.currentKm = round2(km);
+        v.updatedAt = stamp;
+      }
+
+      /* 1) Deposit applied to rent — internal transfer, never counted as income. */
+      if (s.deduction > 0) {
+        data.payments.push({
+          id: uid("pay"),
+          rentalId: r.id,
+          kind: "adjustment",
+          amount: round2(s.deduction),
+          rentalPortion: round2(s.deduction),
+          depositPortion: round2(s.deduction),
+          method: "Deposit adjustment",
+          date: atISO,
+          note: "Security deposit applied to outstanding rent",
+          demo: false,
+          createdAt: stamp
+        });
+      }
+
+      /* 2) Deposit refund — recorded exactly once, only after user confirmed. */
+      if (s.depositRefund > 0) {
+        data.payments.push({
+          id: uid("pay"),
+          rentalId: r.id,
+          kind: "refund",
+          amount: round2(s.depositRefund),
+          rentalPortion: 0,
+          depositPortion: round2(s.depositRefund),
+          method: "Cash",
+          date: atISO,
+          note: "Security deposit refund on return",
+          demo: false,
+          createdAt: stamp
+        });
+      }
+
+      closeModal();
+      afterChange("Rental marked as returned.");
+    }));
+  }
+
+  /* ================================================================== *
+   * Cancel / delete rental
+   * ================================================================== */
+  function openCancelModal(id) {
+    const r = rental(id);
+    if (!r) return;
+    const m = rentalMoney(r);
+    openModal(
+      "Cancel rental",
+      `<form id="cancelForm" novalidate>
+        <div class="warn">Cancelling keeps the record and keeps every payment already recorded.
+          Issue a refund separately if money must be returned to the customer.</div>
+        ${m.rentalPaid > 0 || m.depositHeld > 0
+          ? `<div class="info" style="margin-top:12px">This rental already has ${money(m.rentalPaid)} in rental payments and
+             ${money(m.depositHeld)} in deposits held.</div>` : ""}
+        <div class="field" style="margin-top:14px">
+          <label for="cancelReason">Reason (optional)</label>
+          <input class="input" id="cancelReason" maxlength="200">
+        </div>
+        <div class="form-error" id="cancelError"></div>
+      </form>`,
+      `<button class="btn btn-secondary" onclick="closeModal()">Keep rental</button>
+       <button class="btn btn-danger" form="cancelForm">Cancel rental</button>`
+    );
+
+    el("cancelForm").addEventListener("submit", submitOnce(() => {
+      r.status = "Cancelled";
+      r.cancelledAt = nowISO();
+      r.cancelReason = str(val("cancelReason"), 200);
+      r.updatedAt = nowISO();
+      closeModal();
+      afterChange("Rental cancelled.");
+    }));
+  }
+
+  function deleteRental(id) {
+    const r = rental(id);
+    if (!r) return;
+    if (paymentsFor(id).length) {
+      toast("This rental has payment records and cannot be deleted. Cancel it instead to protect the financial history.", "error");
+      return;
+    }
+    confirmAction("Delete rental?", "This cannot be undone.", "Delete", () => {
+      data.rentals = data.rentals.filter((x) => x.id !== id);
+      closeModal();
+      afterChange("Rental deleted.");
+    });
+  }
+
+  /* ================================================================== *
+   * Detail views
+   * ================================================================== */
+  function viewVehicle(id) {
+    const v = vehicle(id);
+    if (!v) return;
+    const rs = data.rentals.filter((r) => r.vehicleId === id)
+      .sort((a, b) => new Date(b.pickup) - new Date(a.pickup));
+    openModal(
+      esc(v.name),
+      `<div class="two-col">
+        <div>
+          ${v.photo ? `<img src="${esc(v.photo)}" alt="" style="width:100%;max-height:200px;object-fit:cover;border-radius:8px">` : ""}
+          <p><b>${esc(v.registration)}</b> · ${esc(v.type)} · ${chip(vehicleStatus(v))}</p>
+          <p class="subtle">${esc(v.model || "No model")} · ${esc(v.year || "Year not set")} · ${esc(v.fuel || "Fuel not set")}</p>
+          <p>Daily rate: <b>${money(v.dailyRate)}</b><br>
+             Default deposit: <b>${money(v.deposit)}</b><br>
+             Odometer: <b>${Number(v.currentKm || 0).toLocaleString("en-IN")} KM</b></p>
+          ${v.notes ? `<p class="subtle">${esc(v.notes)}</p>` : ""}
+        </div>
+        <div>
+          <h3>Rental history</h3>
+          ${rs.length ? rs.map((r) => `<div style="padding:8px 0;border-bottom:1px solid var(--line)">
+              ${fmtDateTime(r.pickup)} · ${esc(customer(r.customerId)?.name || "—")} · ${chip(r.status)}
+            </div>`).join("") : "<p class='subtle'>No rental history.</p>"}
+        </div>
+      </div>`,
+      `<button class="btn btn-secondary" onclick="closeModal()">Close</button>
+       <button class="btn btn-primary" onclick="openVehicleModal('${id}')">Edit vehicle</button>`
+    );
+  }
+
+  function viewCustomer(id) {
+    const c = customer(id);
+    if (!c) return;
+    const rs = data.rentals.filter((r) => r.customerId === id && r.status !== "Cancelled");
+    let spend = 0, owes = 0, refunds = 0, held = 0;
+    rs.forEach((r) => {
+      const m = rentalMoney(r);
+      spend += m.rentalPaid;
+      held += m.depositHeld;
+      const info = settlementInfo(r);
+      if (info.direction === "customer-owes" || info.direction === "open") owes += info.amount;
+      if (info.direction === "refund-due") refunds += info.amount;
+    });
+
+    openModal(
+      esc(c.name),
+      `<div class="two-col">
+        <div>
+          <p><b>${esc(c.phone)}</b></p>
+          <p>${esc(c.address || "No address added")}</p>
+          <p class="subtle">Licence: ${esc(c.licence || "—")}<br>
+             Expiry: ${fmtDateOnly(c.licenceExpiry)} ${licenceExpired(c) ? chip("Overdue") : ""}<br>
+             ID proof: ${esc(c.idProof || "—")}</p>
+          ${c.notes ? `<p class="subtle">${esc(c.notes)}</p>` : ""}
+        </div>
+        <div class="summary-box" style="margin-top:0">
+          <div><span class="subtle">Rentals</span><b>${rs.length}</b></div>
+          <div><span class="subtle">Rental paid</span><b>${money(round2(spend))}</b></div>
+          <div class="hi-due"><span class="subtle">Customer owes you</span><b>${money(round2(owes))}</b></div>
+          <div class="hi-refund"><span class="subtle">You owe (refunds)</span><b>${money(round2(refunds))}</b></div>
+        </div>
+      </div>
+      <hr class="divider">
+      <h3>Rental history</h3>
+      ${data.rentals.filter((r) => r.customerId === id).length
+        ? data.rentals.filter((r) => r.customerId === id)
+            .sort((a, b) => new Date(b.pickup) - new Date(a.pickup))
+            .map((r) => `<div class="split" style="padding:8px 0;border-bottom:1px solid var(--line)">
+                <span>${fmtDateTime(r.pickup)} · ${esc(vehicle(r.vehicleId)?.name || "—")} ${chip(r.status)}<br>${settlementLabel(settlementInfo(r))}</span>
+                <button class="btn btn-small btn-secondary" onclick="viewRental('${r.id}')">View</button>
+              </div>`).join("")
+        : "<p class='subtle'>No rental history.</p>"}`
+    );
+  }
+
+  function viewRental(id) {
+    const r = rental(id);
+    if (!r) return;
+    const c = customer(r.customerId);
+    const v = vehicle(r.vehicleId);
+    const m = rentalMoney(r);
+    const info = settlementInfo(r);
+
+    /* A clear one-line obligation summary at the top of the dialog. */
+    let settlementBanner = "";
+    if (info.direction === "customer-owes") {
+      settlementBanner = `<div class="warn danger" style="margin-bottom:12px"><b>Customer owes ${money(info.amount)}.</b> Use “Collect” to record the payment.</div>`;
+    } else if (info.direction === "refund-due") {
+      settlementBanner = `<div class="info" style="margin-bottom:12px"><b>You owe the customer a refund of ${money(info.amount)}.</b> Use “Refund” to record the payout.</div>`;
+    } else if (info.direction === "settled") {
+      settlementBanner = `<div class="info" style="margin-bottom:12px"><b>Fully settled.</b> Nothing is owed in either direction.</div>`;
+    }
+
+    openModal(
+      "Rental details",
+      `${settlementBanner}
+       <div class="two-col">
+        <div>
+          <h3>${esc(c?.name || "Deleted customer")}</h3>
+          <p class="subtle">${esc(c?.phone || "")}</p>
+          <p><b>${esc(v?.name || "Deleted vehicle")}</b><br>
+             <span class="subtle">${esc(v?.registration || "")}</span></p>
+          <p>Pickup: <b>${fmtDateTime(r.pickup)}</b><br>
+             Scheduled return: <b>${fmtDateTime(r.return)}</b>
+             ${r.actualReturnAt ? `<br>Actual return: <b>${fmtDateTime(r.actualReturnAt)}</b>` : ""}</p>
+          ${r.endingKm !== null ? `<p class="subtle">Ending odometer: ${Number(r.endingKm).toLocaleString("en-IN")} KM</p>` : ""}
+          ${r.notes ? `<p class="subtle">${esc(r.notes)}</p>` : ""}
+          ${r.returnNotes ? `<p class="subtle">Return notes: ${esc(r.returnNotes)}</p>` : ""}
+          ${r.cancelReason ? `<p class="subtle">Cancellation reason: ${esc(r.cancelReason)}</p>` : ""}
+        </div>
+        <div>
+          <p>Status: ${chip(r.status)} ${chip(m.paymentStatus)} ${isOverdue(r) ? chip("Overdue") : ""}</p>
+          <div class="receipt-line"><span>Billable days</span><b>${m.days}</b></div>
+          <div class="receipt-line"><span>Rental subtotal</span><b>${money(m.subtotal)}</b></div>
+          <div class="receipt-line"><span>Discount</span><b>− ${money(m.discount)}</b></div>
+          <div class="receipt-line"><span>Additional charges</span><b>${money(m.extra)}</b></div>
+          <div class="receipt-line receipt-total"><span>Rental charge</span><b>${money(m.charge)}</b></div>
+          <div class="receipt-line"><span>Security deposit agreed</span><b>${money(m.depositDue)}</b></div>
+          <div class="receipt-line"><span>Rental paid</span><b>${money(m.rentalPaid)}</b></div>
+          <div class="receipt-line"><span class="dir-in">↓ Received from customer</span><b>${money(m.collected)}</b></div>
+          <div class="receipt-line"><span class="dir-out">↑ Refunded to customer</span><b>${money(m.refunded)}</b></div>
+          <div class="receipt-line"><span class="dir-move">↔ Deposit applied to rent</span><b>${money(m.depositApplied)}</b></div>
+          <div class="receipt-line receipt-sub"><span>Deposit held</span><b>${money(m.depositHeld)}</b></div>
+          <div class="receipt-line"><span>Deposit refunded</span><b>${money(m.depositRefunded)}</b></div>
+          <div class="receipt-line"><span>Deposit still due</span><b>${money(m.depositOutstanding)}</b></div>
+          <div class="receipt-line"><span class="set-due">Customer owes you</span><b>${money(m.rentalBalance)}</b></div>
+        </div>
+      </div>`,
+      `<button class="btn btn-secondary" onclick="closeModal()">Close</button>
+       <button class="btn btn-secondary" onclick="openReceipt('${r.id}')">Receipt</button>
+       ${r.status !== "Cancelled" ? `<button class="btn btn-secondary" onclick="openRentalModal('${r.id}')">Edit</button>` : ""}
+       ${(m.rentalBalance > 0 || m.depositOutstanding > 0 || m.depositHeld > 0) && r.status !== "Cancelled"
+          ? `<button class="btn btn-secondary" onclick="openPaymentModal('${r.id}')">${info.direction === "customer-owes" ? "Collect" : (info.direction === "refund-due" ? "Refund" : "Record payment")}</button>` : ""}
+       ${r.status === "Active" ? `<button class="btn btn-primary" onclick="openReturnModal('${r.id}')">Mark returned</button>` : ""}
+       ${(r.status === "Reserved" || r.status === "Active") ? `<button class="btn btn-danger" onclick="openCancelModal('${r.id}')">Cancel rental</button>` : ""}
+       ${paymentsFor(r.id).length === 0 ? `<button class="btn btn-danger" onclick="deleteRental('${r.id}')">Delete</button>` : ""}`,
+      true
+    );
+  }
+
+  function openReceipt(id) {
+    const r = rental(id);
+    if (!r) return;
+    const c = customer(r.customerId);
+    const v = vehicle(r.vehicleId);
+    const m = rentalMoney(r);
+    const info = settlementInfo(r);
+
+    let settlementLine = "";
+    if (info.direction === "customer-owes") {
+      settlementLine = `<div class="receipt-line receipt-sub"><span class="set-due">Customer owes you</span><b>${money(info.amount)}</b></div>`;
+    } else if (info.direction === "refund-due") {
+      settlementLine = `<div class="receipt-line receipt-sub"><span class="set-refund">Refund due to customer</span><b>${money(info.amount)}</b></div>`;
+    } else if (info.direction === "settled") {
+      settlementLine = `<div class="receipt-line receipt-sub"><span class="set-settled">Settlement</span><b>Settled ✓</b></div>`;
+    }
+
+    openModal(
+      "Rental receipt",
+      `<div class="receipt">
+        <div class="receipt-title">
+          <h1 style="margin:0">${esc(data.settings.businessName || "RentalTrack")}</h1>
+          <p class="subtle">Rental receipt · ${esc(r.id.slice(-8).toUpperCase())} · ${fmtDate(r.createdAt)}</p>
+        </div>
+        <div class="receipt-line"><span>Customer</span><b>${esc(c?.name || "—")}</b></div>
+        <div class="receipt-line"><span>Phone</span><b>${esc(c?.phone || "—")}</b></div>
+        <div class="receipt-line"><span>Vehicle</span><b>${esc(v?.name || "—")} · ${esc(v?.registration || "")}</b></div>
+        <div class="receipt-line"><span>Pickup</span><b>${fmtDateTime(r.pickup)}</b></div>
+        <div class="receipt-line"><span>Scheduled return</span><b>${fmtDateTime(r.return)}</b></div>
+        ${r.actualReturnAt ? `<div class="receipt-line"><span>Actual return</span><b>${fmtDateTime(r.actualReturnAt)}</b></div>` : ""}
+        <hr class="divider">
+        <div class="receipt-line"><span>Billable days</span><b>${m.days}</b></div>
+        <div class="receipt-line"><span>Rental subtotal</span><b>${money(m.subtotal)}</b></div>
+        <div class="receipt-line"><span>Discount</span><b>− ${money(m.discount)}</b></div>
+        <div class="receipt-line"><span>Additional charges</span><b>${money(m.extra)}</b></div>
+        <div class="receipt-line receipt-total"><span>Rental charge</span><b>${money(m.charge)}</b></div>
+        <div class="receipt-line receipt-sub"><span>Security deposit agreed</span><b>${money(m.depositDue)}</b></div>
+        <div class="receipt-line"><span class="dir-in">↓ Received from customer</span><b>${money(m.collected)}</b></div>
+        <div class="receipt-line"><span class="dir-out">↑ Refunded to customer</span><b>${money(m.refunded)}</b></div>
+        <div class="receipt-line"><span class="dir-move">↔ Deposit applied to rent</span><b>${money(m.depositApplied)}</b></div>
+        <div class="receipt-line receipt-sub"><span>Deposit held</span><b>${money(m.depositHeld)}</b></div>
+        <div class="receipt-line"><span>Deposit refunded</span><b>${money(m.depositRefunded)}</b></div>
+        <div class="receipt-line"><span>Deposit still due</span><b>${money(m.depositOutstanding)}</b></div>
+        ${settlementLine}
+        <p class="subtle" style="margin-top:18px">Security deposits are refundable and are not part of rental income.
+          Any deposit applied to rent is an internal transfer and is not new income.</p>
+      </div>`,
+      `<button class="btn btn-secondary" onclick="closeModal()">Close</button>
+       <button class="btn btn-primary" onclick="window.print()">Print receipt</button>`
+    );
+  }
+
+  /* ================================================================== *
+   * Backup / restore / export
+   * ================================================================== */
+  function download(name, type, text) {
+    const blob = new Blob([text], { type });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 200);
+  }
+
+  function exportBackup() {
+    download("rentaltrack-backup-" + localDateStr() + ".json",
+      "application/json", JSON.stringify(data, null, 2));
+    toast("Backup downloaded (vehicles, customers, rentals, payments and settings).");
+  }
+
+  function csvCell(v) {
+    let s = String(v ?? "");
+    if (/^[=+\-@\t\r]/.test(s) && !/^-?\d+(\.\d+)?$/.test(s)) s = "'" + s;
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  function csvDownload(filename, header, rows) {
+    const text = [header, ...rows].map((r) => r.map(csvCell).join(",")).join("\r\n");
+    download(filename, "text/csv;charset=utf-8", "\uFEFF" + text);
+  }
+
+  function exportCustomersCSV() {
+    csvDownload("rentaltrack-customers-" + localDateStr() + ".csv",
+      ["Name", "Phone", "Address", "Licence", "Licence expiry", "ID proof", "Notes", "Archived"],
+      data.customers.map((c) => [c.name, c.phone, c.address, c.licence, c.licenceExpiry, c.idProof, c.notes, c.archived ? "Yes" : "No"]));
+    toast("Customer CSV downloaded.");
+  }
+
+  function exportRentalsCSV() {
+    csvDownload("rentaltrack-rentals-" + localDateStr() + ".csv",
+      ["Booked on", "Pickup", "Return", "Actual return", "Customer", "Vehicle",
+       "Days", "Rental subtotal", "Discount", "Additional charges", "Rental charge",
+       "Deposit agreed", "Rental paid", "Customer owes", "Deposit applied", "Deposit held",
+       "Refund due", "Rental status", "Payment status"],
+      data.rentals.map((r) => {
+        const m = rentalMoney(r);
+        const info = settlementInfo(r);
+        return [r.createdAt, r.pickup, r.return, r.actualReturnAt,
+          customer(r.customerId)?.name, vehicle(r.vehicleId)?.name,
+          m.days, m.subtotal, m.discount, m.extra, m.charge, m.depositDue,
+          m.rentalPaid, m.rentalBalance, m.depositApplied, m.depositHeld,
+          info.direction === "refund-due" ? m.depositHeld : 0,
+          r.status, m.paymentStatus];
+      }));
+    toast("Rental CSV downloaded.");
+  }
+
+  function exportPaymentsCSV() {
+    csvDownload("rentaltrack-payments-" + localDateStr() + ".csv",
+      ["Date", "Rental id", "Customer", "Vehicle", "Type", "Amount",
+       "Applied to rental", "Applied to deposit", "Method", "Note"],
+      data.payments.map((p) => {
+        const r = rental(p.rentalId);
+        const typeLabel = p.kind === "refund" ? "Refund to customer"
+          : (p.kind === "adjustment" ? "Deposit applied to rent" : "Received from customer");
+        return [p.date, p.rentalId, customer(r?.customerId)?.name, vehicle(r?.vehicleId)?.name,
+          typeLabel, p.amount, p.rentalPortion, p.depositPortion, p.method, p.note];
+      }));
+    toast("Payment CSV downloaded.");
+  }
+
+  function validateBackup(raw) {
+    const errors = [];
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+      return ["The file does not contain a RentalTrack backup object."];
+    }
+
+    ["vehicles", "customers", "rentals", "payments"].forEach((k) => {
+      if (raw[k] !== undefined && !Array.isArray(raw[k])) errors.push(`"${k}" must be a list.`);
+    });
+    if (errors.length) return errors;
+
+    const vehicles = Array.isArray(raw.vehicles) ? raw.vehicles : [];
+    const customers = Array.isArray(raw.customers) ? raw.customers : [];
+    const rentals = Array.isArray(raw.rentals) ? raw.rentals : [];
+    const payments = Array.isArray(raw.payments) ? raw.payments : [];
+
+    const allIds = new Set();
+    const vehicleIds = new Set();
+    const customerIds = new Set();
+    const rentalIds = new Set();
+
+    const checkId = (rec, label) => {
+      if (!rec || typeof rec !== "object") { errors.push(`${label} is not a valid record.`); return false; }
+      const id = rec.id;
+      if (typeof id !== "string" || !id.trim()) { errors.push(`${label} is missing a valid id.`); return false; }
+      if (allIds.has(id)) { errors.push(`Duplicate id "${id}" found.`); return false; }
+      allIds.add(id);
+      return true;
+    };
+
+    const checkAmount = (v, label) => {
+      if (v === undefined || v === null || v === "") return;
+      const n = Number(v);
+      if (!Number.isFinite(n) || n < 0) errors.push(`${label} must be a non-negative number.`);
+    };
+    const checkDate = (v, label) => {
+      if (!v) return;
+      const d = new Date(v);
+      if (isNaN(d.getTime())) errors.push(`${label} is not a valid date.`);
+    };
+
+    vehicles.forEach((v, i) => {
+      const label = `Vehicle #${i + 1}`;
+      if (!checkId(v, label)) return;
+      vehicleIds.add(v.id);
+      if (!v.name || typeof v.name !== "string") errors.push(`${label} is missing a name.`);
+      if (!v.registration || typeof v.registration !== "string") errors.push(`${label} is missing a registration number.`);
+      checkAmount(v.dailyRate, `${label} daily rate`);
+      checkAmount(v.deposit, `${label} deposit`);
+      checkAmount(v.currentKm, `${label} odometer`);
+    });
+
+    customers.forEach((c, i) => {
+      const label = `Customer #${i + 1}`;
+      if (!checkId(c, label)) return;
+      customerIds.add(c.id);
+      if (!c.name || typeof c.name !== "string") errors.push(`${label} is missing a name.`);
+      if (!c.phone || typeof c.phone !== "string") errors.push(`${label} is missing a phone number.`);
+    });
+
+    rentals.forEach((r, i) => {
+      const label = `Rental #${i + 1}`;
+      if (!checkId(r, label)) return;
+      rentalIds.add(r.id);
+      if (!vehicleIds.has(r.vehicleId)) errors.push(`${label} refers to a vehicle that does not exist.`);
+      if (!customerIds.has(r.customerId)) errors.push(`${label} refers to a customer that does not exist.`);
+      checkDate(r.pickup, `${label} pickup`);
+      checkDate(r.return, `${label} return`);
+      if (r.actualReturnAt) checkDate(r.actualReturnAt, `${label} actual return`);
+      checkAmount(r.dailyRate, `${label} daily rate`);
+      checkAmount(r.discount, `${label} discount`);
+      checkAmount(r.extraCharge, `${label} additional charges`);
+      checkAmount(r.securityDeposit !== undefined ? r.securityDeposit : r.deposit, `${label} security deposit`);
+      if (r.status !== undefined && !RENTAL_STATUSES.includes(r.status)) {
+        errors.push(`${label} has an unknown status "${r.status}".`);
+      }
+    });
+
+    payments.forEach((p, i) => {
+      const label = `Payment #${i + 1}`;
+      if (!checkId(p, label)) return;
+      if (!rentalIds.has(p.rentalId)) errors.push(`${label} refers to a rental that does not exist.`);
+      const amount = Number(p.amount);
+      if (!Number.isFinite(amount) || amount <= 0) errors.push(`${label} amount must be greater than zero.`);
+      checkDate(p.date, `${label} date`);
+      if (p.kind !== undefined && !PAYMENT_KINDS.includes(p.kind)) {
+        errors.push(`${label} has an unknown type "${p.kind}".`);
+      }
+      checkAmount(p.rentalPortion, `${label} rental portion`);
+      checkAmount(p.depositPortion, `${label} deposit portion`);
+    });
+
+    return errors;
+  }
+
+  function previewImport(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const target = el("importPreview");
+    target.textContent = "Checking file…";
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      let parsed;
+      try {
+        parsed = JSON.parse(reader.result);
+      } catch (err) {
+        pendingImport = null;
+        target.innerHTML = `<span style="color:#be3144">This file is not valid JSON.</span>`;
+        toast("The selected file could not be parsed.", "error");
+        return;
+      }
+
+      const errors = validateBackup(parsed);
+      if (errors.length) {
+        pendingImport = null;
+        target.innerHTML =
+          `<span style="color:#be3144"><b>Import rejected.</b></span><br>` +
+          errors.slice(0, 6).map((x) => "• " + esc(x)).join("<br>") +
+          (errors.length > 6 ? `<br>…and ${errors.length - 6} more problem(s).` : "");
+        toast("The backup file failed validation.", "error");
+        return;
+      }
+
+      pendingImport = normalize(parsed);
+      target.innerHTML =
+        `Ready to import: <b>${pendingImport.vehicles.length}</b> vehicles,
+         <b>${pendingImport.customers.length}</b> customers,
+         <b>${pendingImport.rentals.length}</b> rentals and
+         <b>${pendingImport.payments.length}</b> payment records.
+         <div class="actions" style="margin-top:10px">
+           <button class="btn btn-small btn-primary" onclick="confirmImport()">Replace current data</button>
+           <button class="btn btn-small btn-secondary" onclick="cancelImport()">Cancel</button>
+         </div>`;
+    };
+    reader.onerror = () => {
+      pendingImport = null;
+      target.textContent = "The file could not be read.";
+      toast("The selected file could not be read.", "error");
+    };
+    reader.readAsText(file);
+  }
+
+  function cancelImport() {
+    pendingImport = null;
+    const f = el("importFile");
+    if (f) f.value = "";
+    el("importPreview").textContent = "";
+  }
+
+  function confirmImport() {
+    if (!pendingImport) return;
+    const snapshot = data;
+    confirmAction("Replace all current data?",
+      "Every vehicle, customer, rental, payment and setting currently in this browser will be replaced by the imported backup.",
+      "Replace data", () => {
+        data = pendingImport;
+        pendingImport = null;
+        if (!afterChange("Backup restored.")) {
+          data = snapshot;
+          renderActive();
+        }
+        const f = el("importFile");
+        if (f) f.value = "";
+        el("importPreview").textContent = "";
+      });
+  }
+
+  /* ================================================================== *
+   * Demo data (fully isolated from real records)
+   * ================================================================== */
+  function loadDemoData() {
+    if (data.vehicles.some((v) => v.demo) || data.customers.some((c) => c.demo)) {
+      toast("Demo data is already loaded.", "error");
+      return;
+    }
+    const t = nowISO();
+    const c = {
+      id: uid("cus"), name: "Aarav Sen (demo)", phone: "98765 43210", address: "Kolkata",
+      licence: "WB01 20240012345", licenceExpiry: "2029-06-30", idProof: "PAN verified",
+      notes: "Fictional demo customer", archived: false, demo: true, createdAt: t, updatedAt: t
+    };
+    const v = {
+      id: uid("veh"), type: "Car", name: "Maruti Swift (demo)", registration: "WB 06 R 1234",
+      model: "Swift VXI", year: "2023", fuel: "Petrol", dailyRate: 1800, deposit: 5000,
+      currentKm: 12540, active: true, notes: "Fictional demo vehicle", photo: "",
+      demo: true, createdAt: t, updatedAt: t
+    };
+    data.customers.push(c);
+    data.vehicles.push(v);
+    data.settings.demoLoaded = true;
+    afterChange("Demo data loaded. It is tagged and isolated from your real records.");
+  }
+
+  function clearDemoData() {
+    const demoVehicleIds = new Set(data.vehicles.filter((v) => v.demo).map((v) => v.id));
+    const demoCustomerIds = new Set(data.customers.filter((c) => c.demo).map((c) => c.id));
+
+    const blockers = data.rentals.filter((r) =>
+      !r.demo && (demoVehicleIds.has(r.vehicleId) || demoCustomerIds.has(r.customerId)));
+
+    if (blockers.length) {
+      toast("Some real rentals use demo vehicles or customers. Remove those rentals first so no real data is lost.", "error");
+      return;
+    }
+
+    const demoRentalIds = new Set(data.rentals.filter((r) => r.demo).map((r) => r.id));
+
+    if (!demoVehicleIds.size && !demoCustomerIds.size && !demoRentalIds.size) {
+      toast("No demo data is currently loaded.", "error");
+      return;
+    }
+
+    confirmAction("Clear demo data?",
+      "Only records tagged as demo will be removed. Your real vehicles, customers, rentals and payments are untouched.",
+      "Clear demo data", () => {
+        data.vehicles = data.vehicles.filter((v) => !v.demo);
+        data.customers = data.customers.filter((c) => !c.demo);
+        data.rentals = data.rentals.filter((r) => !r.demo);
+        data.payments = data.payments.filter((p) => !p.demo && !demoRentalIds.has(p.rentalId));
+        data.settings.demoLoaded = false;
+        closeModal();
+        afterChange("Demo data cleared.");
+      });
+  }
+
+  function confirmReset() {
+    confirmAction("Clear ALL RentalTrack data?",
+      "Every vehicle, customer, rental, payment and setting stored in this browser will be permanently removed. Export a backup first if you may need this data.",
+      "Delete everything", () => {
+        data = blank();
+        closeModal();
+        afterChange("All local RentalTrack data cleared.");
+      });
+  }
+
+  /* ================================================================== *
+   * Global exports
+   * ================================================================== */
+  window.openVehicleModal = openVehicleModal;
+  window.openCustomerModal = openCustomerModal;
+  window.openRentalModal = openRentalModal;
+  window.openPaymentModal = openPaymentModal;
+  window.openReturnModal = openReturnModal;
+  window.openCancelModal = openCancelModal;
+  window.viewVehicle = viewVehicle;
+  window.viewCustomer = viewCustomer;
+  window.viewRental = viewRental;
+  window.openReceipt = openReceipt;
+  window.closeModal = closeModal;
+  window.removePhoto = removePhoto;
+  window.toggleVehicle = toggleVehicle;
+  window.toggleCustomer = toggleCustomer;
+  window.deleteVehicle = deleteVehicle;
+  window.deleteCustomer = deleteCustomer;
+  window.deleteRental = deleteRental;
+  window.deletePayment = deletePayment;
+  window.showView = showView;
+  window.changeMonth = changeMonth;
+  window.exportBackup = exportBackup;
+  window.exportCustomersCSV = exportCustomersCSV;
+  window.exportRentalsCSV = exportRentalsCSV;
+  window.exportPaymentsCSV = exportPaymentsCSV;
+  window.previewImport = previewImport;
+  window.confirmImport = confirmImport;
+  window.cancelImport = cancelImport;
+  window.confirmReset = confirmReset;
+  window.loadDemoData = loadDemoData;
+  window.clearDemoData = clearDemoData;
+  window.setReportRange = setReportRange;
+  window.reportDateChanged = reportDateChanged;
+  window.renderActive = renderActive;
+
+  /* ================================================================== *
+   * Boot
+   * ================================================================== */
+  document.querySelectorAll(".nav button").forEach((b) => {
+    b.addEventListener("click", () => showView(b.dataset.view));
+  });
+
+  el("globalSearch").addEventListener("input", renderActive);
+
+  data = load();
+  if (storageWarningShown) {
+    toast("Saved data could not be read. A fresh workspace was opened.", "error");
+  }
+  syncRentalStatuses();
+  setReportRange();
+  renderAll();
+  renderSettings();
+})();
+</script>
+</body>
+</html>
